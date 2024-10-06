@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset='utf-8'>
+	<title><%= title %></title>
+
+	<script type='text/javascript' src='/scripts/d3/dist/d3.min.js'></script>
+	<script type='text/javascript' src='/scripts/d3-selection-multi/build/d3-selection-multi.min.js'></script>
+	<script type='text/javascript' src='/js/d3.prototype.extensions.js'></script>
+
+	<script type='module' src='/js/load.mjs'></script>
+	<link rel='stylesheet' type='text/css' href='../../css/main.css'>
+</head>
+
+<body>
+
+<div class='container'>
+	<div class='btn-container'>
+		<button class='btn add-note'>&nbsp;+&nbsp;</button>
+		<!-- <button class='btn toggle-umap' onclick='toggleUMAP.call(this)'>Toggle UMAP</button> -->
+	</div>
+	<div class='canvas'>
+		<div class='origin'></div>
+	</div>
+</div>
+
+<script type='text/javascript'>
+
+/*
+function title (content = '', x = null, y = null, id = null) {
+	const title = d3.select('div.canvas')
+		.addElem('div', 'title')
+		.datum(d => { 
+			console.log(x, y, id)
+			if (!id) {
+				const center = d3.select('div.origin').node().getBoundingClientRect()
+				return { content: content, x: (x - (center.x + 10)) / d.k, y: (y - (center.y + 10)) / d.k } 
+			}
+			else return { content: content, x: x, y: y, id: id } 
+		})
+		.style('transform', d => {
+			
+			return `translate(${d.x}px, ${d.y}px)`
+		})
+	.on('click', _ => {
+		d3.selectAll('div.note').classed('focus', false)
+	})
+	title.addElems('div', 'sticky-area')
+	title.addElems('input')
+		.attrs({ 'type': 'text', 'placeholder': 'Title' })
+		.each(function (d) { this.value = d.content })
+	.on('focus', _ => {
+		d3.select('div.container').classed('changing-text', true)
+	})
+	.on('focusout', async function (d) {
+		d.content = this.value.trim()
+		if (!d.content.length) {
+			d3.select(this.parentNode).remove()
+			await POST('/removeTitle', { data: d, project: <%= wall %> }) 
+		}
+		else await POST('/updateTitle', { data: d, project: <%= wall %> }) 
+		d3.select('div.container').classed('changing-text', false)
+	})
+	.on('keydown', function () {
+		const evt = d3.event
+		evt.stopPropagation()
+		if (evt.key === 'Enter' || evt.keyCode === 13) this.blur()
+	})
+	title.call(drag)
+	return title
+}
+
+const titles = <%- titles %>
+titles.forEach(d => new title(d.content, d.x, d.y, d.id, true))
+*/
+
+</script>
+
+</body>
+</html>

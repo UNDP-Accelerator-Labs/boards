@@ -1,0 +1,207 @@
+* {
+	padding: 0;
+	margin: 0;
+}
+div.btn-container {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 1000;
+}
+button.btn {
+	display: block;
+	padding: 1rem;
+	font-size: 1rem;
+	border: 1px solid rgba(51,51,51,.25);
+	outline: none;
+	display: inline-block;
+	cursor: pointer;
+	color: #333;
+}
+button.btn.active {
+	background-color: #333;
+	color: #FFF;
+}
+button.btn:hover {
+	background-color: #222;
+	color: #FFF;
+}
+div.container {
+	width: 100vw;
+	height: 100vh;
+	position: fixed;
+	top: 0;
+	left: 0;
+	background-color: #FFF;
+}
+div.canvas {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	overflow: visible;
+}
+div.origin {
+	position: absolute;
+	top: -10px;
+	left: -10px;
+	overflow: visible;
+	width: 20px;
+	height: 20px;
+}
+div.origin::before {
+	content: '';
+	width: 20px;
+	height: 1px;
+	background-color: #333;
+	position: absolute;
+	top: 10px;
+	left: 0;
+}
+div.origin::after {
+	content: '';
+	height: 20px;
+	width: 1px;
+	background-color: #333;
+	position: absolute;
+	left: 10px;
+	top: 0;
+}
+div.group {
+	position: absolute;
+	border: 1px solid rgba(51,51,51,.25);
+	background-color: #EAEAEA;
+	padding: 4rem 2rem 2rem 2rem;
+	margin: -4rem 0 0 -2rem;
+	z-index: 50;
+	resize: both;
+}
+div.group input[type=text] {
+	display: block;
+	width: 100%;
+	border: none;
+	background-color: transparent;
+	font-family: Comic Sans MS;
+	font-size: 1.5rem;
+	margin-bottom: 15px;
+}
+div.note {
+	background-color: yellow;
+	font-family: Comic Sans MS;
+	display: inline-block;
+	position: absolute;
+	min-width: 200px;
+	min-height: 200px;
+	padding: 2rem;
+	border: 1px solid rgba(51,51,51,.05);
+	z-index: 100;
+	transform-origin: top center;
+	margin: 0 1rem 1rem 0;
+}
+/*div.group.child,
+div.note.child {
+	position: relative;
+}*/
+div.group.focus {
+	border: 1px solid rgba(51,51,51,.25);
+}
+div.note.focus {
+	border: 1px solid rgba(51,51,51,.1);	
+}
+div.hit::before {
+	content: '';
+	position: absolute;
+	top: -2rem;
+	left: -2rem;
+	width: 100%;
+	height: 100%;
+	border: 1px solid #333;
+	padding: 2rem;
+}
+div.sticky-area {
+	width: calc(100% + 4rem);
+	margin: -2rem 0 0 -2rem;
+	height: 2rem;
+	background-color: rgba(51,51,51,.05);
+	cursor: grab;
+}
+div.group div.sticky-area {
+	margin: -4rem 0 1rem -2rem;
+}
+div.note div.color-swatches {
+	/*width: 150px;*/
+	height: 100%;
+	position: absolute;
+	top: 0;
+	left: -20px;
+	transform: scale(0);
+	transform-origin: top center;
+	transition: transform .1s;
+}
+div.note.focus div.color-swatches {
+	transform: scale(1);
+}
+div.color-swatches div.color {
+	width: 10px;
+	height: 10px;
+	color: yellow;
+	border-radius: 10px;
+	border: 1px solid rgba(51,51,51,.15);
+	display: block;
+	margin: 10px 10px 0 0;
+	cursor: pointer;
+}
+div.note.dragging div.sticky-area {
+	cursor: grabbing;
+}
+textarea {
+	font-family: Comic Sans MS;
+	outline: none;
+	border: none;
+	width: calc(100% - 2rem);
+	margin: 1rem 0 0 1rem;
+	min-height: calc(200px - 1rem);
+	background-color: transparent;
+	min-width: 200px;
+	font-size: 1rem;
+	/*width: 100%;*/
+	/*display: flex;*/
+	/*align-items: center;*/
+	/*justify-content: center;*/
+	text-align: center;
+	resize: none;
+	position: absolute;
+	left: 0;
+	overflow: hidden;
+}
+div.title {
+	/*padding: 2rem;*/
+	/*margin: -2rem 0 0 -2rem;*/
+	position: absolute;
+	height: 3rem;
+	line-height: 3rem;
+	/*border-left: 1rem solid rgba(51,51,51,0);*/
+}
+div.title div.sticky-area {
+	width: 30px;
+	height: 3rem;
+	display: inline-block;
+	position: absolute;
+	left: -40px;
+	cursor: grab;
+}
+div.title:hover div.sticky-area {
+	background-color: rgba(51,51,51,.1);
+}
+div.title.dragging div.sticky-area {
+	cursor: grabbing;
+}
+div.title input[type=text] {
+	font-family: Comic Sans MS;
+	font-size: 2rem;
+	border: none;
+	outline: none;
+	margin-bottom: .5rem;
+	/*vertical-align: middle;*/
+}

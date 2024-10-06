@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<% include partials/head.ejs %>
+</head>
+
+<body>
+
+<div class='container'>
+	<button class='btn add-note' onclick='new postit()'>+</button>
+	<div class='canvas'>
+		<div class='origin'></div>
+	</div>
+</div>
+
+<script type='text/javascript'>
+
+// const w = d3.select('div.canvas').node().clientWidth || d3.select('div.canvas').node().offsetWidth
+// const h = d3.select('div.canvas').node().clientHeight || d3.select('div.canvas').node().offsetHeight
+
+nColors = 8
+const colors = d3.scaleOrdinal(d3.schemePastel1)
+	.domain(d3.range(nColors))
+
+const zoom = d3.zoom()
+	.scaleExtent([.1, 1])
+	.on('zoom', zooming)
+
+d3.select('div.container').call(zoom)
+
+function zooming () {
+	if (d3.select(this).classed('adding-text') || d3.select(this).classed('changing-text')) return
+	const t = d3.event.transform
+	d3.select('div.canvas')
+		.datum(t)
+		.style('transform', d => `translate(${d.x}px, ${d.y}px) scale(${d.k})`)
+	.select('div.origin')
+		.style('transform', d => `scale(${1 / d.k})`)
+}
+// zooming(d3.zoomIdentity)
+
+const drag = d3.drag()
+.on('start', dragStart)
+.on('drag', dragging)
+.on('end', dragEnd)
+
+function dragStart (d) {
+	const evt = d3.event
+	const sel = d3.select(this)
+	d3.selectAll('div.note.focus').classed('focus', false)
+	if (sel.classed('note')) {
+		sel.classed('focus', true).classed('unmoved', false).moveToFront()
+		if (d3.select(evt.sourceEvent.srcElement).classed('sticky-area')) sel.classed('dragging', true)
+		else sel.classed('dragging', false)
+	}
+	else if (sel.classed('title')) {
+		if (d3.select(evt.sourceEvent.srcElement).classed('sticky-area')) sel.classed('dragging', true)
+		else sel.classed('dragging', false)
+	}
+}
+function dragging (d) {
+	const evt = d3.event
+	if (d3.select(this).classed('dragging')) {
+		const offset = d3.select('div.canvas').datum()
+		d.x += evt.dx / offset.k
+		d.y += evt.dy / offset.k
+		d3.select(this).style('transform', `translate(${d.x}px, ${d.y}px)`)
+	}
+}
+async function dragEnd (d) {
+	const sel = d3.select(this)
+	sel.classed('dragging', false)
+	if (sel.classed('note')) {
+		// d3.select(this).transition()
+		// .duration(100)
+		// .style('transform', `translate(${d.x}px, ${d.y}px) rotate(${Math.round(Math.random()) * 26 - 13}deg)`)
+		await POST('/updateNote', { data: d })
+	}
+	else if (sel.classed('title')) await POST('/updateTitle', { data: d })
+}
+
+function postit (content = '', color = colors(0), x = null, y = null, id = 0) {
+	const otherNotesAtOrigin = d3.selectAll('div.note.unmoved')
+
+	d3.selectAll('div.note.focus').classed('focus', false)
+	const note = d3.select('div.canvas')
+		.addElem('div', 'note focus')
+		.datum({ content: content, color: color, x: x || 10 * otherNotesAtOrigin.size(), y: y || 10 * otherNotesAtOrigin.size(), id: id })
+		.classed('unmoved', d => d.x === 0 && d.y === 0)
+		.styles({ 'transform': d => `translate(${d.x}px, ${d.y}px)`, 'background-color': d => d.color })
+		// .styles({ 'transform': d => `translate(${d.x}px, ${d.y}px) rotate(${Math.round(Math.random()) * 26 - 13}deg)`, 'background-color': d => d.color })
+	note.addElems('div', 'color-swatches')
+		.addElems('div', 'color', d3.range(nColors).map(d => colors(d)))
+	.on('mousedown', async function (d) {
+		d3.event.stopPropagation()
+		d3.select(this.parentNode.parentNode).style('background-color', c => c.color = d)
+		const response = await POST('/updateNote', { data: this.parentNode.parentNode['__data__'] }) 
+	}).style('background-color', d => d)
+	note.addElems('div', 'sticky-area')
+	note.addElems('textarea')
+		.each(function (d) { this.value = d.content })
+		.on('keydown', _ => d3.event.stopPropagation())
+		.on('focusout', async function (d) {
+			d.content = this.value.trim() || d.content
+			await POST('/updateNote', { data: d }) 
+		})
+	// input.node().focus()
+	note.call(drag)
+	return note
+}
+function title (content = '', x = null, y = null, id = null) {
+	const title = d3.select('div.canvas')
+		.addElem('div', 'title')
+		.datum(d => { 
+			console.log(x, y, id)
+			if (!id) {
+				const center = d3.select('div.origin').node().getBoundingClientRect()
+				return { content: content, x: (x - (center.x + 10)) / d.k, y: (y - (center.y + 10)) / d.k } 
+			}
+			else return { content: content, x: x, y: y, id: id } 
+		})
+		.style('transform', d => {
+			
+			return `translate(${d.x}px, ${d.y}px)`
+		})
+	.on('click', _ => {
+		d3.selectAll('div.note').classed('focus', false)
+	})
+	title.addElems('div', 'sticky-area')
+	title.addElems('input')
+		.attrs({ 'type': 'text', 'placeholder': 'Title' })
+		.each(function (d) { this.value = d.content })
+	.on('focus', _ => {
+		d3.select('div.container').classed('changing-text', true)
+	})
+	.on('focusout', async function (d) {
+		d.content = this.value.trim()
+		if (!d.content.length) {
+			d3.select(this.parentNode).remove()
+			await POST('/removeTitle', { data: d }) 
+		}
+		else await POST('/updateTitle', { data: d }) 
+		d3.select('div.container').classed('changing-text', false)
+	})
+	.on('keydown', function () {
+		const evt = d3.event
+		evt.stopPropagation()
+		if (evt.key === 'Enter' || evt.keyCode === 13) this.blur()
+	})
+	title.call(drag)
+	return title
+}
+
+d3.select(document).on('keydown', async _ => {
+	const evt = d3.event
+	console.log(evt)
+	if (evt.key === 'Backspace' || evt.keyCode === 8) {
+		const note = d3.select('div.note.focus')
+		if (note.node()) {
+			await POST('/removeNote', { data: note.datum() })
+			note.remove()
+		}
+	}
+	if (evt.key === '+' || evt.keyCode === 187) { //(evt.keyCode === 187 && evt.shiftKey)) {
+		d3.event.preventDefault()
+		const note = new postit()
+		const response = await POST('/addNote', { data: note.datum() })
+		note.each(d => d.id = response.id).select('textarea').node().focus()
+	}
+	if (evt.key === 'ArrowLeft' || evt.keyCode === 37) {
+		d3.select('div.note.focus').style('transform', d => `translate(${d.x -= evt.shiftKey ? 30 : 10}px, ${d.y}px)`)
+	}
+	if (evt.key === 'ArrowRight' || evt.keyCode === 39) {
+		d3.select('div.note.focus').style('transform', d => `translate(${d.x += evt.shiftKey ? 30 : 10}px, ${d.y}px)`)
+	}
+	if (evt.key === 'ArrowDown' || evt.keyCode === 40) {
+		d3.select('div.note.focus').style('transform', d => `translate(${d.x}px, ${d.y += evt.shiftKey ? 30 : 10}px)`)
+	}
+	if (evt.key === 'ArrowUp' || evt.keyCode === 38) {
+		d3.select('div.note.focus').style('transform', d => `translate(${d.x}px, ${d.y -= evt.shiftKey ? 30 : 10}px)`)
+	}
+	if (evt.key === 't' || evt.keyCode === 84) {
+		d3.selectAll('div.note').classed('focus', false)
+		d3.select('div.container').classed('adding-text', function () { return !d3.select(this).classed('adding-text') })
+	}
+	if (evt.key === '0' || evt.keyCode === 48) {
+		// zoom.translateTo(d3.select('div.cavnas'), 0, 0)
+		// zoom.scaleTo(d3.select('div.cavnas'), 1)
+		// zoom.translate(d3.select('div.cavnas'), d3.zoomIdentity.translate(0, 0).scale(1))
+		// d3.select('div.canvas').datum({ x: 0, y: 0, k: 1 }).style('transform', d => `translate(${d.x}px, ${d.y}px) scale(${d.k})`)
+	}
+})
+
+
+const notes = <%- notes %>
+notes.forEach(d => new postit(d.content, d.color, d.x, d.y, d.id))
+const titles = <%- titles %>
+titles.forEach(d => new title(d.content, d.x, d.y, d.id, true))
+
+
+d3.select('div.canvas').datum({ x: 0, y: 0, k: 1 })
+d3.select('div.container')
+.on('click', async function () {
+	const evt = d3.event
+	const sel = d3.select(this)
+	if (sel.classed('adding-text')) {
+		sel.classed('adding-text', false)
+		const text = new title('', evt.x, evt.y)
+		const response = await POST('/addTitle', { data: text.datum() })
+		text.each(d => d.id = response.id).select('input').node().focus()
+	}
+})
+
+function POST (_uri, _q) {
+	const jsonQueryHeader = { 'Accept': 'application/json', 'Content-Type': 'application/json' }
+	return new Promise(resolve => 
+		fetch(_uri, { method: 'POST', headers: jsonQueryHeader, body: JSON.stringify(_q) })
+			.then(response => response.json())
+			.then(results => resolve(results))
+			// .then(_ => _loader.clear())
+			.catch(err => { if (err) throw (err) })
+	)
+}
+
+</script>
+
+</body>
+</html>
