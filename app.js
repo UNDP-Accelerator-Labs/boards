@@ -5,7 +5,7 @@ const session = require('express-session');
 const PgSession = require('connect-pg-simple')(session); // IN CASE WE WANT TO STORE SESSIONS
 const express = require('express');
 const http = require('http');
-const https = require('https');
+// const https = require('https');
 const url = require('url');
 const path = require('path');
 const bodyparser = require('body-parser');
@@ -82,7 +82,7 @@ app.delete('/logout', logout);
 app.get('*', routes.notfound);
 
 let server = http.createServer(app);
-if (process.env.NODE_ENV === 'production') server = https.createServer(app);
+// if (process.env.NODE_ENV === 'production') server = https.createServer(app);
 
 function heartbeat() {
 	this.isAlive = true;
