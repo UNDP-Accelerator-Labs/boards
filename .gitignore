@@ -2,3 +2,4 @@
 dep.*
 *.sublime-*
 node_modules/
+*.env
