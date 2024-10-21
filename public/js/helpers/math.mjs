@@ -17,3 +17,19 @@ export const checkContain = function (p, node) {
 	if (x1 <= x && x1 + w1 >= x && y1 <= y && y1 + h1 >= y) return node;
 	else return null;
 }
+export const computeAbsCoordinates = function (sel, ref) {
+	const { x, y } = sel.node().getBoundingClientRect();
+	const { x: ox, y: oy } = ref.node().getBoundingClientRect();
+	let { k } = ref.datum();
+	if (!k) k = 1;
+	return [ (x - ox) / k, (y - oy) / k ];
+}
+function getPosition (sel) {
+	let { x, y } = sel.datum();
+	if (sel.classed('child') || !x || !y) {
+		const { x: bx, y: by } = sel.node().getBoundingClientRect();
+		x = bx;
+		y = by;
+	}
+	return [ x, y ];
+}

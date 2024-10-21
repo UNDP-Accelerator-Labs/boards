@@ -1,3 +1,5 @@
+export const uuid = 'uuid';
+
 const currentURL = new URL(window.location);
 const currentPath = currentURL.pathname.split('/');
 export const wallId = currentPath[currentPath.length - 1];
@@ -26,7 +28,7 @@ export const tree = {
 		return false;
 	},
 	getNodes: function (tree) {
-		return tree?.split('.');
+		return tree?.split('.') || [];
 	},
 	moveUp: function (tree) {
 		const depth = this.getDepth(tree);
@@ -53,5 +55,23 @@ export const tree = {
 		return pool.filter(function (d) {
 			return d.tree?.startsWith(tree) && node !== this;
 		});
-	}
+	},
+	rebase: function (tree, node, newbase) {
+		const nodes = this.getNodes(tree);
+		const cut = nodes.indexOf(`${node}`);
+		if (cut !== -1) {
+			nodes.splice(0, cut);
+			return `${newbase}.${nodes.join('.')}`;
+		} else return `${newbase}.${node}`
+
+	},
+	build: function (base, node) {
+		return `${base}.${node}`;
+	},
+	cutBranch: function (tree, node) {
+		const nodes = this.getNodes(tree);
+		const cut = nodes.indexOf(`${node}`);
+		nodes.splice(cut, 1);
+		return nodes.join('.');
+	},
 }
