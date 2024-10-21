@@ -1,6 +1,6 @@
 import { Note, Group, Card } from '../elements/index.mjs';
 import { wallId } from '../helpers/index.mjs';
-const host = 'localhost:8000';
+const host = new URL(window.location).host;
 let ws;
 
 export const connectToSocket = function () {
