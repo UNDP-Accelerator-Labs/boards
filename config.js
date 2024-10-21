@@ -4,7 +4,7 @@ const connection = {
 	host: process.env.DB_HOST,
 	user: process.env.DB_USERNAME,
 	password: process.env.DB_PASSWORD,
-	ssl: process.env.DB_HOST !== 'localhost',
+	ssl: process.env.DB_HOST !== '',
 }
 const logSQL = true
 const initOptions = {

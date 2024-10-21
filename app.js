@@ -1,17 +1,21 @@
 'use strict';
 
 const session = require('express-session');
-// const PgSession = require('connect-pg-simple')(session); // IN CASE WE WANT TO STORE SESSIONS
+
+const PgSession = require('connect-pg-simple')(session); // IN CASE WE WANT TO STORE SESSIONS
 const express = require('express');
 const http = require('http');
-const https = require('https');
+// const https = require('https');
 const url = require('url');
 const path = require('path');
 const bodyparser = require('body-parser');
 const WebSocket = require('ws');
 const { WebSocketServer } = WebSocket;
+const DB = require('./config.js');
 
 const app = express();
+
+app.set('trust proxy', 1);
 
 const cookie = {
 	domain: process.env.NODE_ENV === 'production' ? 'acclabs-boards.azurewebsites.net' : undefined,
@@ -23,7 +27,7 @@ const cookie = {
 const sessionMiddleware = session({
 	name: 'postit-session',
 	secret: 'my-secure-pass',
-	// store: new PgSession({ pgPromise: DB.general }),
+	store: new PgSession({ pgPromise: DB.conn }),
 	resave: false,
 	saveUninitialized: false,
 	cookie,
@@ -77,10 +81,8 @@ app.delete('/logout', logout);
 
 app.get('*', routes.notfound);
 
-let server;
+let server = http.createServer(app);
 // if (process.env.NODE_ENV === 'production') server = https.createServer(app);
-// else 
-server = http.createServer(app);
 
 function heartbeat() {
 	this.isAlive = true;
