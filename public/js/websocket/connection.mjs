@@ -11,7 +11,7 @@ export const connectToSocket = function () {
 
   if (host.includes("localhost"))
     ws = new WebSocket(`ws://${host}?project=${wallId}`);
-  else ws = new WebSocket(`wss://https://${host}?project=${wallId}`);
+  else ws = new WebSocket(`wss://www.${host}?project=${wallId}`);
   ws.onerror = function () {
     console.log("WebSocket error");
   };
