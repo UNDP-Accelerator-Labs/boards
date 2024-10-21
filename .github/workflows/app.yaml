@@ -19,7 +19,7 @@ jobs:
         run: git fetch --prune --unshallow --tags
 
       - name: Docker login
-        uses: azure/docker-login@v1
+        uses: azure/docker-login@v2
         with:
           login-server: acclabdocker.azurecr.io
           username: ${{ secrets.REGISTRY_USERNAME }}
