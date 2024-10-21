@@ -78,8 +78,9 @@ app.delete('/logout', logout);
 app.get('*', routes.notfound);
 
 let server;
-if (process.env.NODE_ENV === 'production') server = https.createServer(app);
-else server = http.createServer(app);
+// if (process.env.NODE_ENV === 'production') server = https.createServer(app);
+// else 
+server = http.createServer(app);
 
 function heartbeat() {
 	this.isAlive = true;
