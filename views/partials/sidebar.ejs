@@ -1,0 +1,58 @@
+<div class='sidebar'>
+	<div class='toggle'>
+		<div class='line l1'></div>
+		<div class='line l2'></div>
+		<div class='line l3'></div>
+	</div>
+	<div class='inner'>
+		<div class='content'>
+			<h1>Load data</h1>
+			<div class='datasource new'>
+				<h2>New collection</h2>
+				<form action='GET'>
+					<div class='row'>
+						<label>Platform</label>
+						<select name='platform'>
+							<option value='solutions'>Solutions</option>
+							<option value='experiments'>Experiments</option>
+							<option value='learningplans'>Learning plans</option>
+						</select>
+					</div>
+					<div class='row'>
+						<label>Countries</label>
+						<input type='text' name='countries' placeholder='ISO3 country codes (comma separated)' />
+					</div>
+					<div class='row'>
+						<label>Regions</label>
+						<input type='text' name='regions' placeholder='UNDP Regional Bureau accronyms (comma separated)' />
+					</div>
+					<div class='row'>
+						<label>Mobilizations</label>
+						<input type='text' name='mobilizations' placeholder='Mobilization IDs (comma separated)' />
+					</div>
+					<div class='row'>
+						<label>Pads</label>
+						<input type='text' name='pads' placeholder='Pad IDs (comma separated)' />
+					</div>
+					<div class='row'>
+						<label>Pinboards</label>
+						<input type='text' name='pinboard' placeholder='Pinboard IDs (comma separated)' />
+					</div>
+					<div class='row'>
+						<label>API Key</label>
+						<input type='text' name='token' placeholder='API key' />
+					</div>
+					<div class='row'>
+						<label>Limit</label>
+						<input type='number' name='limit' min=1 value=100 />
+					</div>
+					<div class='row'>
+						<label>Page</label>
+						<input type='number' name='page' min=1 value=1 />
+					</div>
+					<button type='button' class='btn' id='loadData'>Load</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>

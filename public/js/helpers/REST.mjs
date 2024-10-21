@@ -10,3 +10,9 @@ export const POST = async function (_uri, _q) {
 		.then(response => response.json())
 		.catch(err => { if (err) throw (err) });
 }
+export const DELETE = async function (_uri, _q) {
+	const jsonQueryHeader = { 'Accept': 'application/json', 'Content-Type': 'application/json' };
+	return await fetch(_uri, { method: 'DELETE', headers: jsonQueryHeader })
+		.then(response => response.json())
+		.catch(err => { if (err) throw (err) });
+}

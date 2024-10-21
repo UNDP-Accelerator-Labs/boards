@@ -10,19 +10,30 @@
 
 	<script type='module' src='/js/load.mjs'></script>
 	<link rel='stylesheet' type='text/css' href='../../css/main.css'>
+	<link rel='stylesheet' type='text/css' href='../../css/sidebar.css'>
 </head>
 
 <body>
 
+<div class='connection overlay'>
+	<button class='connect-to-scocket'>Connect to board</button>
+</div>
 <div class='container'>
 	<div class='btn-container'>
 		<button class='btn add-note'>&nbsp;+&nbsp;</button>
+		<!-- <button class='btn get-cards'>Get cards</button> -->
+		<!-- <button class='btn login'>Login</button> -->
+		<button class='btn logout'>Logout</button>
+		<!-- <button class='btn connect-to-scocket'>Connect to Socket</button> -->
 		<!-- <button class='btn toggle-umap' onclick='toggleUMAP.call(this)'>Toggle UMAP</button> -->
 	</div>
 	<div class='canvas'>
 		<div class='origin'></div>
 	</div>
+	<!-- <div class='deck'></div> -->
 </div>
+
+<%- include('./partials/sidebar.ejs') %>
 
 <script type='text/javascript'>
 
@@ -70,7 +81,7 @@ function title (content = '', x = null, y = null, id = null) {
 	return title
 }
 
-const titles = <%- titles %>
+const titles;
 titles.forEach(d => new title(d.content, d.x, d.y, d.id, true))
 */
 

@@ -26,12 +26,24 @@ d3.selection.prototype.addElems = function (_element, _class, _data, _key) {
 	return new dynamicElement(this, 'append', _element, _class ? _class : '', _data, _key)
 }
 d3.selection.prototype.findAncestor = function (_class) {
-	if (!this.node().classList) return false
-	if (this.classed(_class)) return this
+	if (!this.node().classList || this.node().nodeName === 'BODY') return false;
+	if (this.classed(_class)) return this;
 	return d3.select(this.node().parentNode) && d3.select(this.node().parentNode).findAncestor(_class);
 }
 d3.selection.prototype.moveToFront = function() {
 	return this.each(function(){
-		this.parentNode.appendChild(this)
-	})
+		this.parentNode.appendChild(this);
+	});
+}
+d3.selection.prototype.moveTo = function(_target) {
+	return this.each(function(){
+		d3.select(`.${_target}`).node().appendChild(this);
+	});
+}
+d3.selection.prototype.moveUpDOM = function(_limit) {
+	if (!d3.select(this.node().parentNode).classed(_limit)) {
+		return this.each(function(){
+			this.parentNode.parentNode.appendChild(this);
+		})
+	} else return false;
 }

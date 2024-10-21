@@ -2,6 +2,49 @@
 	padding: 0;
 	margin: 0;
 }
+body {
+	font-family: Helvetica, Arial, sans-serif;
+}
+h1, h2 {
+	margin-bottom: 1em;
+}
+h2 small {
+	font-size: .5em;
+}
+div.overlay {
+	position: absolute;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background-color: rgba(51,51,51,.5);
+	z-index: 1000;
+}
+div.overlay button {
+	display: block;
+	padding: 1rem;
+	font-size: 1rem;
+	border: none;
+	outline: none;
+	display: inline-block;
+	cursor: pointer;
+	color: #333;
+	background-color: #FFF;
+}
+div.grid {
+	position: fixed;
+	top: 0;
+	left: 0;
+}
+div.col {
+	width: 100px;
+	height: 100vh;
+	border-right: 1px solid #CCC;
+	float: left;
+}
 div.btn-container {
 	position: fixed;
 	top: 0;
@@ -12,7 +55,7 @@ button.btn {
 	display: block;
 	padding: 1rem;
 	font-size: 1rem;
-	border: 1px solid rgba(51,51,51,.25);
+	border: 1px solid #000;
 	outline: none;
 	display: inline-block;
 	cursor: pointer;
@@ -32,15 +75,26 @@ div.container {
 	position: fixed;
 	top: 0;
 	left: 0;
-	background-color: #FFF;
+	background-color: #FAFAFA;
 }
 div.canvas {
-	width: 100%;
-	height: 100%;
+	width: 3000px;
+	height: 3000px;
 	position: absolute;
 	top: 0;
 	left: 0;
 	overflow: visible;
+	background-color: #FFF;
+	background-image: radial-gradient(circle at 1px 1px, black 1px, transparent 0); /* SOURCE: https://stackoverflow.com/questions/55364127/making-a-dotted-grid-with-css/55364821#55364821 */
+	background-size: 40px 40px;
+}
+div.deck {
+	display: flex;
+	position: fixed;
+	bottom: 0;
+	width: 100%;
+	min-height: 200px;
+	overflow: auto;
 }
 div.origin {
 	position: absolute;
@@ -68,22 +122,27 @@ div.origin::after {
 	left: 10px;
 	top: 0;
 }
+div.dragging {
+	z-index: 1000 !important;
+}
 div.group {
 	position: absolute;
 	border: 1px solid rgba(51,51,51,.25);
-	background-color: #EAEAEA;
-	padding: 4rem 2rem 2rem 2rem;
-	margin: -4rem 0 0 -2rem;
+	background-color: rgba(225,225,225,.25);
+	padding: 4rem 0rem 2rem 2rem;
+	margin: 0 2rem 2rem 0;
 	z-index: 50;
+	resize: both;
+	max-width: 1000px;
 	resize: both;
 }
 div.group input[type=text] {
 	display: block;
-	width: 100%;
+	width: calc(100% - 2rem);
 	border: none;
 	background-color: transparent;
 	font-family: Comic Sans MS;
-	font-size: 1.5rem;
+	font-size: 1.25rem;
 	margin-bottom: 15px;
 }
 div.note {
@@ -91,25 +150,78 @@ div.note {
 	font-family: Comic Sans MS;
 	display: inline-block;
 	position: absolute;
-	min-width: 200px;
-	min-height: 200px;
+	min-width: 100px;
+	min-height: 100px;
 	padding: 2rem;
 	border: 1px solid rgba(51,51,51,.05);
 	z-index: 100;
 	transform-origin: top center;
-	margin: 0 1rem 1rem 0;
+	margin: 0 2rem 1rem 0;
 }
-/*div.group.child,
-div.note.child {
+div.card {
+	background-color: #FFF;
+	display: inline-block;
+	position: absolute;
+	width: 150px;
+	min-height: 100px;
+	padding: 2rem;
+	border: 1px solid rgba(51,51,51,.05);
+	z-index: 100;
+	transform-origin: top center;
+	margin: 0 2rem 1rem 0;
+}
+div.card img {
+	width: 150px;
+}
+div.card h1 {
+	font-size: 1rem;
+	margin-bottom: .25rem;
+}
+div.card p {
+	font-size: .75rem;
+}
+/*div.deck div.card {
 	position: relative;
+}
+div.deck div.card a h1 {
+	font-size: 1rem;
+}
+div.deck div.card p {
+	font-size: .75rem;
 }*/
+div.group.child,
+div.note.child,
+div.card.child {
+	position: relative;
+	vertical-align: top;
+}
 div.group.focus {
 	border: 1px solid rgba(51,51,51,.25);
 }
-div.note.focus {
+div.note.focus,
+div.card.focus {
 	border: 1px solid rgba(51,51,51,.1);	
 }
-div.hit::before {
+div.locked {
+	pointer-events: none !important;
+}
+div.locked::before {
+	content: attr(data-locked-by);
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 2rem;
+	line-height: 2rem;
+	font-family: 'Helvetica', 'Arial', sans-serif;
+	text-align: center;
+	color: rgba(51,51,51,.5);
+	font-size: 10px;
+}
+div.hit {
+	border-color: #333;
+}
+/*div.hit::before {
 	content: '';
 	position: absolute;
 	top: -2rem;
@@ -118,7 +230,7 @@ div.hit::before {
 	height: 100%;
 	border: 1px solid #333;
 	padding: 2rem;
-}
+}*/
 div.sticky-area {
 	width: calc(100% + 4rem);
 	margin: -2rem 0 0 -2rem;
@@ -126,11 +238,15 @@ div.sticky-area {
 	background-color: rgba(51,51,51,.05);
 	cursor: grab;
 }
-div.group div.sticky-area {
+div.group > div.sticky-area {
+	width: calc(100% + 2rem);
 	margin: -4rem 0 1rem -2rem;
 }
 div.note div.color-swatches {
 	/*width: 150px;*/
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
 	height: 100%;
 	position: absolute;
 	top: 0;
@@ -149,10 +265,12 @@ div.color-swatches div.color {
 	border-radius: 10px;
 	border: 1px solid rgba(51,51,51,.15);
 	display: block;
-	margin: 10px 10px 0 0;
+/*	margin: 10px 10px 0 0;*/
 	cursor: pointer;
 }
-div.note.dragging div.sticky-area {
+div.group.dragging div.sticky-area,
+div.note.dragging div.sticky-area
+div.card.dragging div.sticky-area {
 	cursor: grabbing;
 }
 textarea {
@@ -161,9 +279,9 @@ textarea {
 	border: none;
 	width: calc(100% - 2rem);
 	margin: 1rem 0 0 1rem;
-	min-height: calc(200px - 1rem);
+	min-height: calc(100px - 1rem);
 	background-color: transparent;
-	min-width: 200px;
+	min-width: 100px;
 	font-size: 1rem;
 	/*width: 100%;*/
 	/*display: flex;*/
