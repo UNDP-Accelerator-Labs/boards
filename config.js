@@ -1,9 +1,10 @@
 const connection = {
-	database: 'postit', /* REPLACE THIS IF YOU USED A DIFFERENT NAME WHEN CREATING YOUR DATABASE FOR QATALOG */ 
-	port: 5432, /* REPLACE THIS WITH PORT #, e.g., 5432 OR 5433 */
-	host: '',
-	user: 'myjyby', /* REPLACE THIS WITH YOUR psql USERNAME */
-	password: 'flyingpig' /* REPLACE THIS WITH YOUR psql PASSWORD */
+	database: process.env.DB_NAME,
+	port: process.env.DB_PORT,
+	host: process.env.DB_HOST,
+	user: process.env.DB_USERNAME,
+	password: process.env.DB_PASSWORD,
+	ssl: process.env.DB_HOST !== 'localhost',
 }
 const logSQL = true
 const initOptions = {
