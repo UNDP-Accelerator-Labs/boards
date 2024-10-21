@@ -5,7 +5,7 @@ const session = require('express-session');
 const PgSession = require('connect-pg-simple')(session); // IN CASE WE WANT TO STORE SESSIONS
 const express = require('express');
 const http = require('http');
-// const https = require('https');
+const https = require('https');
 const url = require('url');
 const path = require('path');
 const bodyparser = require('body-parser');
@@ -82,14 +82,13 @@ app.delete('/logout', logout);
 app.get('*', routes.notfound);
 
 let server = http.createServer(app);
-// if (process.env.NODE_ENV === 'production') server = https.createServer(app);
+if (process.env.NODE_ENV === 'production') server = https.createServer(app);
 
 function heartbeat() {
 	this.isAlive = true;
 }
 // SET UP WEBSOCKET SERVER
 // SOURCE: https://github.com/websockets/ws/blob/master/examples/express-session-parse/index.js
-// const wss = new WebSocketServer({ clientTracking: true, noServer: true });
 const wss = new WebSocketServer({ clientTracking: true, noServer: true });
 
 server.on('upgrade', function (req, socket, head) {
