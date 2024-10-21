@@ -6,16 +6,17 @@ exports.groups = require('./groups.js');
 exports.datasources = require('./datasources.js');
 
 exports.home = (req, res) => {
-	DB.conn.tx(t => {
-		const batch = []
-		batch.push(t.any(`SELECT * FROM notes;`))
-		batch.push(t.any(`SELECT * FROM titles;`))
-		return t.batch(batch)
-	})
-	.then(data => {
-		res.render('home', { title: 'post it', notes: JSON.stringify(data[0]), titles: JSON.stringify(data[1]) })
-	})
-	.catch(err => console.log(err))
+	// DB.conn.tx(t => {
+	// 	const batch = []
+	// 	batch.push(t.any(`SELECT * FROM notes;`))
+	// 	batch.push(t.any(`SELECT * FROM titles;`))
+	// 	return t.batch(batch)
+	// })
+	// .then(data => {
+	// 	res.render('home', { title: 'post it', notes: JSON.stringify(data[0]), titles: JSON.stringify(data[1]) })
+	// })
+	// .catch(err => console.log(err))
+	res.send('Hello world');
 }
 exports.wall = (req, res) => {
 	const { id: wallId } = req.params;
