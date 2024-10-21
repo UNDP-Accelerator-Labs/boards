@@ -4,6 +4,7 @@ const session = require('express-session');
 // const PgSession = require('connect-pg-simple')(session); // IN CASE WE WANT TO STORE SESSIONS
 const express = require('express');
 const http = require('http');
+const https = require('https');
 const url = require('url');
 const path = require('path');
 const bodyparser = require('body-parser');
@@ -13,9 +14,9 @@ const { WebSocketServer } = WebSocket;
 const app = express();
 
 const cookie = {
-	domain: undefined, // process.env.NODE_ENV === 'production' ? app_base_host : undefined,
-	httpOnly: false, // true,
-	secure: false, // process.env.NODE_ENV === 'production',
+	domain: process.env.NODE_ENV === 'production' ? 'acclabs-boards.azurewebsites.net' : undefined,
+	httpOnly: true,
+	secure: process.env.NODE_ENV === 'production',
 	maxAge: 1 * 1000 * 60 * 60 * 24 * 1, // DEFAULT TO 1 DAY. UPDATE TO 1 YEAR FOR TRUSTED DEVICES
 	sameSite: 'lax',
 };
@@ -76,7 +77,9 @@ app.delete('/logout', logout);
 
 app.get('*', routes.notfound);
 
-const server = http.createServer(app);
+let server;
+if (process.env.NODE_ENV === 'production') server = https.createServer(app);
+else server = http.createServer(app);
 
 function heartbeat() {
 	this.isAlive = true;
