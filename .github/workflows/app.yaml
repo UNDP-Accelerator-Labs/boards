@@ -1,0 +1,57 @@
+name: Deployment
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+
+jobs:
+  build_pipeline:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch tags
+        run: git fetch --prune --unshallow --tags
+
+      - name: Docker login
+        uses: azure/docker-login@v1
+        with:
+          login-server: acclabdocker.azurecr.io
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Set env
+        run: echo "IMAGE_TAG=$(make -s name)" >> $GITHUB_ENV
+
+      - name: Build docker image
+        run: |
+          make -s build
+
+      - name: Push docker image
+        run: |
+          make -s dockerpush
+
+  deploy_staging_pipeline:
+    name: Deploy
+    needs: build_pipeline
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch tags
+        run: git fetch --prune --unshallow --tags
+
+      - name: Set env
+        run: echo "IMAGE_TAG=$(make -s name)" >> $GITHUB_ENV
+
+      - uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'acclabs-boards'
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+          images: 'acclabdocker.azurecr.io/board:${{ env.IMAGE_TAG }}'
