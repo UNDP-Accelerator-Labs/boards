@@ -16,6 +16,9 @@ function zooming () {
 		})
 	.select('div.origin')
 		.style('transform', d => `scale(${1 / d.k})`);
+
+	d3.selectAll('div.sticky-area')
+	.style('height', `${30 * 1 / t.k / 2}px`);
 }
 
 export const zoom = d3.zoom()

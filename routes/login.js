@@ -1,13 +1,13 @@
 const uuid = require('uuid');
 
 exports.login = (req, res) => {
-	//
-	// "Log in" user and set uuid to session.
-	//
-	const id = uuid.v4();
-	console.log(`Updating session for user ${id}`);
-	req.session.uuid = id;
-	res.send({ result: 'OK', message: 'Session updated' });
+	if (req.session.uuid) res.send({ result: 'OK', message: 'A session already exists' })
+	else {
+		const id = uuid.v4();
+		console.log(`Updating session for user ${id}`);
+		req.session.uuid = id;
+		res.send({ result: 'OK', message: 'Session updated' });
+	}
 };
 
 exports.logout = (req, res) => {
