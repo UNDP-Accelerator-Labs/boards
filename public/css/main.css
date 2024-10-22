@@ -234,7 +234,8 @@ div.hit {
 div.sticky-area {
 	width: calc(100% + 4rem);
 	margin: -2rem 0 0 -2rem;
-	height: 2rem;
+	height: 30px;
+	max-height: 120px;
 	background-color: rgba(51,51,51,.05);
 	cursor: grab;
 }
