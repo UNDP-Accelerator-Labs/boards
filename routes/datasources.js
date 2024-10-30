@@ -46,8 +46,8 @@ exports.increase = (req, res) => {
 			promises.push(
 				fetch(pads)
 				.then(response => response.json())
-				.then(json => {
-					const [ data ] = json;
+				.then(data => {
+					// const [ data ] = json;
 					data.forEach(d => d.source = `${origin}/en/view/pad?id=${d.pad_id}`);
 					return data;
 				}).catch(err => console.log(err))

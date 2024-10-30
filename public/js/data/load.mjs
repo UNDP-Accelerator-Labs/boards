@@ -23,8 +23,8 @@ export const loadData = async function (_params) {
 	promises.push(GET(stats));
 	promises.push(
 		GET(pads)
-		.then(res => {
-			const [ data ] = res;
+		.then(data => {
+			// const [ data ] = res;
 			data.forEach(d => d.source = `${origin}/en/view/pad?id=${d.pad_id}`);
 			return data;
 		})
