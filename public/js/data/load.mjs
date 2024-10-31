@@ -25,7 +25,7 @@ export const loadData = async function (_params) {
 		GET(pads)
 		.then(data => {
 			// const [ data ] = res;
-			data.forEach(d => d.source = `${origin}/en/view/pad?id=${d.pad_id}`);
+			data?.forEach(d => d.source = `${origin}/en/view/pad?id=${d.pad_id}`);
 			return data;
 		})
 	);
