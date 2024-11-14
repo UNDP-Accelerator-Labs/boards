@@ -1,4 +1,4 @@
-import { Note, Group, Card } from "../elements/index.mjs";
+import { Note, Group, Card, Matrix } from "../elements/index.mjs";
 import { wallId } from "../helpers/index.mjs";
 const host = new URL(window.location).host;
 let ws;
@@ -76,6 +76,23 @@ export const connectToSocket = function () {
       } else if (operation === "release") {
         await Card.release({ id: data?.id, client });
         console.log("locked card");
+      }
+    } else if (object === "matrix") {
+      if (operation === "add") {
+        await Matrix.add({ datum: data, client });
+        console.log("added new matrix");
+      } else if (operation === "update") {
+        await Matrix.update({ datum: data, client });
+        console.log("updated matrix");
+      } else if (operation === "delete") {
+        await Matrix.remove({ id: data?.id, client });
+        console.log("removed matrix");
+      } else if (operation === "lock") {
+        await Matrix.lock({ id: data?.id, client });
+        console.log("locked matrix");
+      } else if (operation === "release") {
+        await Matrix.release({ id: data?.id, client });
+        console.log("locked matrix");
       }
     }
   };

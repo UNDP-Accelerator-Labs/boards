@@ -3,6 +3,7 @@ const DB = require('../config.js');
 exports.notes = require('./notes.js');
 exports.cards = require('./cards.js');
 exports.groups = require('./groups.js');
+exports.matrixes = require('./matrixes.js');
 exports.datasources = require('./datasources.js');
 
 exports.home = (req, res) => {

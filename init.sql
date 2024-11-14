@@ -11,6 +11,18 @@ CREATE TABLE groups (
 	x DOUBLE PRECISION,
 	y DOUBLE PRECISION,
 	project INT REFERENCES projects (id) ON UPDATE CASCADE ON DELETE CASCADE,
+	tree ltree DEFAULT text2ltree('0'),
+	matrix_index ltree
+);
+
+CREATE TABLE matrixes (
+	id SERIAL PRIMARY KEY UNIQUE NOT NULL,
+	label VARCHAR (99),
+	x DOUBLE PRECISION,
+	y DOUBLE PRECISION,
+	project INT REFERENCES projects (id) ON UPDATE CASCADE ON DELETE CASCADE,
+	cols JSONB DEFAULT '["header", "header"]',
+	rows JSONB DEFAULT '["index", "index"]',
 	tree ltree DEFAULT text2ltree('0')
 );
 

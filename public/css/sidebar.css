@@ -71,7 +71,8 @@ div.sidebar div.toggle {
 	cursor: pointer;
 }
 
-div.sidebar div.datasource {
+div.sidebar div.datasource,
+div.sidebar div.element {
 	margin-bottom: 60px;
 }
 div.sidebar div.row {

@@ -2,18 +2,22 @@ const DB = require('../config.js');
 
 exports.get = (req, res) => {
 	const { wallId } = req.query;
-	DB.conn.any(`SELECT * FROM groups WHERE project = $1::INT;`, [wallId])
+	DB.conn.any(`
+		SELECT * FROM groups 
+		WHERE project = $1::INT
+		AND matrix_index IS NULL
+	;`, [wallId])
 	.then(data => res.status(200).json(data))
 	.catch(err => console.log(err));
 }
 exports.add = (req, res) => {
-	const { label, x, y, project, tree } = req.body.data;
+	const { label, x, y, project, tree, matrix_index } = req.body.data;
 	const wallId = req.body.project;
 	DB.conn.one(`
-		INSERT INTO groups (label, x, y, project, tree)
-		VALUES ($1, $2, $3, $4::INT, text2ltree($5))
+		INSERT INTO groups (label, x, y, project, tree, matrix_index)
+		VALUES ($1, $2, $3, $4::INT, text2ltree($5), text2ltree($6))
 		RETURNING *
-	;`, [label, x, y, wallId, tree])
+	;`, [label, x, y, wallId, tree, matrix_index])
 	.then(data => res.status(200).json(data))
 	.catch(err => console.log(err));
 }
