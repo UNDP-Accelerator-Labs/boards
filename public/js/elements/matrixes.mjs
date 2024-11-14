@@ -166,6 +166,10 @@ export const Matrix = {
 		};
 		const { id: mid, tree: mtree, cols: mcols, rows: mrows, cells: mcells } = matrix.datum();
 		
+		matrix.styles({
+			'transform': d => (![null, undefined].includes(d.x) && ![null, undefined].includes(d.y)) ? `translate(${d.x}px, ${d.y}px)` : null,
+		});
+
 		const table = matrix.select('table');
 		const thead = table.addElems('tr', 'head');
 		thead.addElems('th', 'sticky-area immutable col-header', d => {
