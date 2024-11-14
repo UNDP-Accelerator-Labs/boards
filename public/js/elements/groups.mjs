@@ -1,5 +1,6 @@
 import { Note } from './notes.mjs';
 import { Card } from './cards.mjs';
+import { Matrix } from './matrixes.mjs';
 import { POST, DELETE, wallId, tree, computeAbsCoordinates } from '../helpers/index.mjs';
 import { drag } from './drag.mjs';
 import { broadcast } from '../websocket/index.mjs';
@@ -7,25 +8,25 @@ import { broadcast } from '../websocket/index.mjs';
 export const Group = {
 	add: async function (_kwargs) {
 		const constructorRef = this;
-		let { parent, datum, children, focus, bcast, client } = _kwargs;
+		let { parent, datum, children, focus, bcast, client, immutable } = _kwargs;
 		if (!datum) datum = {};
-		let { id, label, x, y, tree: gtree } = datum;
+		let { id, label, x, y, tree: gtree, matrix_index } = datum;
 		if (!label) label = '';
-		if (!x) x = 0;
-		if (!y) y = 0;
-
-		console.log(x,y)
+		if (x === undefined) x = 0;
+		if (y === undefined) y = 0;
+		if (matrix_index) immutable = true;
 		// CHECK IF THIS IS A NEW GROUP
-		if (!id) datum = await POST('/addGroup', { data: { label, x, y, tree: gtree }, project: wallId });
+		if (!id) datum = await POST('/addGroup', { data: { label, x, y, tree: gtree, matrix_index }, project: wallId });
 		// REMOVE FOCUS FROM ALL OBJECTS
 		constructorRef.releaseAll(bcast);
 		Note.releaseAll(bcast);
 		Card.releaseAll(bcast);
+		Matrix.releaseAll(bcast);
 		// CHECK IF THIS IS TO BE A CHILD GROUP
 		const child = tree.getDepth(gtree) > 1;
 		if (!parent) {
 			if (child) {
-				const parentNode = d3.selectAll('div.group').filter(d => d.tree === tree.moveUp(gtree) && d.id === +tree.getLeaf(gtree)).node();
+				const parentNode = d3.selectAll('div.group, div.matrix').filter(d => d.tree === tree.moveUp(gtree) && d.id === +tree.getLeaf(gtree)).node();
 				if (parentNode) parent = d3.select(parentNode);
 			} else parent = d3.select('div.canvas');
 		}
@@ -34,44 +35,48 @@ export const Group = {
 		.addElem('div', 'group')
 			.datum(datum)
 			.classed('child', child)
+			.classed('immutable', immutable)
 			.classed('focus', focus)
 			.classed('locked', client)
 			.styles({
 				'transform': d => (![null, undefined].includes(d.x) && ![null, undefined].includes(d.y)) ? `translate(${d.x}px, ${d.y}px)` : null,
+				'grid-column-start': d => d.matrix_index ? +tree.getLeaf(d.matrix_index) + 2 : null,
 			});
 		// ADD A STICKY AREA TO MOVE THE GROUP AROUND
-		group.addElems('div', 'sticky-area');
-		// ADD THE LABEL
-		const input = group.addElems('input')
-		.attrs({
-			'type': 'text',
-			'placeholder': 'New group',
-			'value': d => d.label,
-		}).on('mousedown', _ => {
-			d3.event.stopPropagation();
-		}).on('mousemove', _ => {
-			d3.event.stopPropagation();
-		}).on('mouseup', _ => {
-			d3.event.stopPropagation();
-		}).on('keydown', _ => d3.event.stopPropagation())
-		.on('focus', function (d) {
-			const { id } = d;
-			// REMOVE FOCUS FROM ALL OBJECTS
-			if (!d3.select(this).classed('focus')) {
-				constructorRef.releaseAll(true);
-				Note.releaseAll(true);
-				Card.releaseAll(true);
-			}
-			constructorRef.lock({ group, id, bcast: true });
-
-		}).on('focusout', async function (d) {
-			const { id } = d;
-			d.label = this.value.trim() || d.label;
-			await constructorRef.save(d);
-			constructorRef.broadcast({ operation: 'update', data: d });
-			constructorRef.release({ group, id, bcast: true });
-		});
-		if (focus) input.node().focus();
+		if (!immutable) {
+			group.addElems('div', 'sticky-area');
+			// ADD THE LABEL
+			const input = group.addElems('input')
+			.attrs({
+				'type': 'text',
+				'placeholder': 'New group',
+				'value': d => d.label,
+			}).on('mousedown', _ => {
+				d3.event.stopPropagation();
+			}).on('mousemove', _ => {
+				d3.event.stopPropagation();
+			}).on('mouseup', _ => {
+				d3.event.stopPropagation();
+			}).on('keydown', _ => d3.event.stopPropagation())
+			.on('focus', function (d) {
+				const { id } = d;
+				// REMOVE FOCUS FROM ALL OBJECTS
+				if (!d3.select(this).classed('focus')) {
+					constructorRef.releaseAll(true);
+					Note.releaseAll(true);
+					Card.releaseAll(true);
+					Matrix.releaseAll(true);
+				}
+				constructorRef.lock({ group, id, bcast: true });
+			}).on('focusout', async function (d) {
+				const { id } = d;
+				d.label = this.value.trim() || d.label;
+				await constructorRef.save(d);
+				constructorRef.broadcast({ operation: 'update', data: d });
+				constructorRef.release({ group, id, bcast: true });
+			});
+			if (focus) input.node().focus();
+		}
 
 		// SAVE AND BROADCAST
 		if (bcast) {
@@ -113,12 +118,13 @@ export const Group = {
 			}
 		}
 
-		group.call(drag);
+		if (!immutable) group.call(drag);
 		return group;
 	},
 	update: async function (_kwargs) {
 		const constructorRef = this;
 		let { group, datum, bcast } = _kwargs;
+		let immutable = false;
 		if (!group) {
 			const { id } = datum;
 			group = d3.selectAll('div.group')
@@ -131,9 +137,10 @@ export const Group = {
 				}
 			});
 		};
-		const { tree: gtree, id: gid } = group.datum();
-		const child = tree.getDepth(gtree) > 1;
+		const { tree: gtree, id: gid, matrix_index } = group.datum();
+		if (matrix_index) immutable = true;
 
+		const child = tree.getDepth(gtree) > 1;
 		if (!child && !group.node().parentNode.classList.contains('canvas')) {
 			group.moveTo('canvas');
 		} else if (child) { // THIS DOES NOTHING FOR NOW
@@ -155,7 +162,7 @@ export const Group = {
 			.filter(function () {
 				return this.parentNode === group.node();
 			});
-		const rmGroup = children.size() <= 1;
+		const rmGroup = children.size() <= 1 && !immutable;
 
 		const childNodes = children.nodes();
 		for (let i = 0; i < childNodes.length; i ++) {
@@ -229,12 +236,12 @@ export const Group = {
 		const constructorRef = this;
 		let { group, id, bcast, client } = _kwargs;
 		if (!group?.node() && !id) {
-			return console.log('cannot find group to remove');
+			return console.log('cannot find group to lock');
 		} else if (!group?.node() && id) {
 			group = d3.selectAll('div.group')
 				.filter(d => d.id === id);
 		}
-		console.log('lock grroup')
+		console.log('lock group')
 		if (client) {
 			let label = `Locked by ${client}`;
 			if (label.length > 30) label = `${label.slice(0, 30)}…`
@@ -249,7 +256,7 @@ export const Group = {
 		const constructorRef = this;
 		let { group, id, bcast } = _kwargs;
 		if (!group?.node() && !id) {
-			return console.log('cannot find group to remove');
+			return console.log('cannot find group to release');
 		} else if (!group?.node() && id) {
 			group = d3.selectAll('div.group')
 				.filter(d => d.id === id);

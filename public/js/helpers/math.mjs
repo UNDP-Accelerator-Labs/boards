@@ -21,6 +21,9 @@ export const computeAbsCoordinates = function (sel, ref) {
 	const { x, y } = sel.node().getBoundingClientRect();
 	const { x: ox, y: oy } = ref.node().getBoundingClientRect();
 	let { k } = ref.datum();
+	return computeCoordinates(k, x, y, ox, oy);
+}
+export const computeCoordinates = function (k, x, y, ox, oy) {
 	if (!k) k = 1;
 	return [ (x - ox) / k, (y - oy) / k ];
 }

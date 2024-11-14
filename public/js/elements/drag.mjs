@@ -1,6 +1,7 @@
 import { Note } from './notes.mjs';
 import { Group } from './groups.mjs';
 import { Card } from './cards.mjs';
+import { Matrix } from './matrixes.mjs';
 import { POST, wallId, uuid, tree, checkContain, computeAbsCoordinates, computeDistance } from '../helpers/index.mjs';
 import { broadcast } from '../websocket/index.mjs';
 
@@ -16,12 +17,14 @@ function dragStart (d) {
 		Note.releaseAll(true);
 		Card.releaseAll(true);
 		Group.releaseAll(true);
+		Matrix.releaseAll(true);
 	}
 	
-	if (sel.classed('note') || sel.classed('card') || sel.classed('group')) {
+	if (sel.classed('note') || sel.classed('card') || sel.classed('group') || sel.classed('matrix')) {
 		if (sel.classed('note')) Note.lock({ note: sel, id, bcast: true });
 		if (sel.classed('card')) Card.lock({ card: sel, id, bcast: true });
 		if (sel.classed('group')) Group.lock({ group: sel, id, bcast: true });
+		if (sel.classed('matrix')) Matrix.lock({ group: sel, id, bcast: true });
 		
 		if (d3.select(evt.sourceEvent.srcElement).classed('sticky-area')) {
 			sel.classed('dragging', true)
@@ -35,14 +38,12 @@ function dragStart (d) {
 		}
 		else sel.classed('dragging', false);
 	}
-	// else if (sel.classed('title')) {
-	// 	if (d3.select(evt.sourceEvent.srcElement).classed('sticky-area')) sel.classed('dragging', true);
-	// 	else sel.classed('dragging', false);
-	// }
+
 	let object;
 	if (sel.classed('note')) object = 'note';
 	else if (sel.classed('card')) object = 'card';
 	else if (sel.classed('group')) object = 'group';
+	else if (sel.classed('matrix')) object = 'matrix';
 	broadcast.object({ 
 		object,
 		operation: 'update',
@@ -65,31 +66,33 @@ function dragging (d) {
 		d.y += evt.dy / k;
 		sel.style('transform', `translate(${d.x}px, ${d.y}px)`);
 	}
-	const hits = [];
-	d3.selectAll('div.group:not(.dragging), div.note:not(.dragging), div.card:not(.dragging)')
-	.filter(function () { return this !== node })
-	.classed('hit', false)
-	.each(function (c) {
-		const sel = d3.select(this);
-		const { clientX: x, clientY: y } = evt.sourceEvent;
-		const hit = checkContain([x, y], this);
-		if (hit) hits.push({ node: this });
-	});
-	// MAKE SURE THERE IS ONLY ONE TARGET/HIT
-	const hit = hits[hits.length - 1]?.node;
-	if (hit) {
-		d3.select(hit)
-			.classed('hit', true)
-			.style('border-width', `${1 / k}px`);
+	
+	if (!sel.classed('matrix')) {
+		const hits = [];
+		d3.selectAll('div.group:not(.dragging), div.note:not(.dragging), div.card:not(.dragging)')
+		.filter(function () { return this !== node })
+		.classed('hit', false)
+		.each(function (c) {
+			const sel = d3.select(this);
+			const { clientX: x, clientY: y } = evt.sourceEvent;
+			const hit = checkContain([x, y], this);
+			if (hit) hits.push({ node: this });
+		});
+		// MAKE SURE THERE IS ONLY ONE TARGET/HIT
+		const hit = hits[hits.length - 1]?.node;
+		if (hit) {
+			d3.select(hit)
+				.classed('hit', true)
+				.style('border-width', `${1 / k}px`);
+		}
 	}
-
-	console.log(hit)
 	
 	// BROADCAST THE DRAG
 	let object;
 	if (sel.classed('note')) object = 'note';
 	else if (sel.classed('card')) object = 'card';
 	else if (sel.classed('group')) object = 'group';
+	else if (sel.classed('matrix')) object = 'matrix';
 	broadcast.object({ 
 		object,
 		operation: 'update',
@@ -98,14 +101,15 @@ function dragging (d) {
 }
 async function dragEnd (d) {
 	if (computeDistance([0, 0], [d.dx, d.dy]) <= 10) {
-		Note.releaseAll(true);
+		// Note.releaseAll(true);
 		Card.releaseAll(true);
 		Group.releaseAll(true);
+		// Matrix.releaseAll(true);
 		return console.log('has not moved');
 	}
 
 	const sel = d3.select(this)
-		.classed('dragging', false)
+		.classed('dragging', false);
 	const parent = d3.select(this.parentNode);
 
 	const hit = d3.select('div.hit');
@@ -140,6 +144,7 @@ async function dragEnd (d) {
 			// d.tree = tree.rebase(d.tree, gid, gtree);
 			d.tree = tree.build(gtree, gid);
 		}
+		hit.classed('hit', false);
 	} else { // THE OBJECT IS MOVED OUT OF ALL GROUPS
 		const [ x, y ] = computeAbsCoordinates(sel, d3.select('.canvas'));
 		d.x = x;
@@ -166,6 +171,12 @@ async function dragEnd (d) {
 			bcast: true,
 		});
 		Group.release({ group: sel, id: d.id, bcast: true });
+	} else if (sel.classed('matrix')) {
+		await Matrix.update({ 
+			matrix: sel, 
+			datum: d,
+			bcast: true,
+		});
 	}
 	
 	if (parent.classed('group')) {
@@ -180,6 +191,7 @@ async function dragEnd (d) {
 	// Note.releaseAll(true);
 	// Card.releaseAll(true);
 	// Group.releaseAll(true);
+	// Matrix.releaseAll(true);
 }
 
 export const drag = d3.drag()

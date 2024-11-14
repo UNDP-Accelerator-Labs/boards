@@ -1,4 +1,6 @@
 import { Group } from './groups.mjs';
+import { Matrix } from './matrixes.mjs';
+import { Card } from './cards.mjs';
 import { POST, DELETE, wallId, tree, computeAbsCoordinates } from '../helpers/index.mjs';
 import { drag } from './drag.mjs';
 import { broadcast } from '../websocket/index.mjs';
@@ -17,14 +19,15 @@ export const Note = {
 		if (!color) color = colors(0);
 		// GET ALL UNMOVED NOTES, TO CHECK FOR VISUAL OVERLAP/CLUTTER AND OFFSET IF NEEDED
 		const otherNotesAtOrigin = d3.selectAll('div.note.unmoved');
-		if (!x) x = 10 * otherNotesAtOrigin.size();
-		if (!y) y = 10 * otherNotesAtOrigin.size();
+		if (x === undefined) x = 10 * otherNotesAtOrigin.size();
+		if (y === undefined) y = 10 * otherNotesAtOrigin.size();
 		// CHECK IF THIS IS A NEW NOTE
-		if (!id) datum = await POST('/addNote', { data: { content, color, x, y }, project: wallId });
+		if (!id) datum = await POST('/addNote', { data: { content, color, x, y, tree: ntree }, project: wallId });
 		// REMOVE FOCUS FROM ALL OBJECTS
 		constructorRef.releaseAll(bcast);
+		Card.releaseAll(bcast);
 		Group.releaseAll(bcast);
-		//.classed('focus', false)
+		Matrix.releaseAll(bcast);
 		// CHECK IF THIS IS TO BE A CHILD GROUP
 		let parent = d3.select('div.canvas');
 		const child = tree.getDepth(ntree) > 1;
@@ -74,7 +77,9 @@ export const Note = {
 			// REMOVE FOCUS FROM ALL OBJECTS
 			if (!d3.select(this).classed('focus')) {
 				constructorRef.releaseAll(true);
+				Card.releaseAll(true);
 				Group.releaseAll(true);
+				Matrix.releaseAll(true);
 			}
 			constructorRef.lock({ note, id, bcast: true });
 		}).on('focusout', async function (d) {

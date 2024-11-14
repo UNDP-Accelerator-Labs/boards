@@ -78,8 +78,8 @@ div.container {
 	background-color: #FAFAFA;
 }
 div.canvas {
-	width: 3000px;
-	height: 3000px;
+	width: 10000px;
+	height: 10000px;
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -125,6 +125,55 @@ div.origin::after {
 div.dragging {
 	z-index: 1000 !important;
 }
+div.matrix {
+	position: absolute;
+	display: grid;
+	grid-template-columns: auto auto;
+	padding: 0;
+	margin: 0 2rem 2rem 0;
+	z-index: 50;
+}
+div.matrix table {
+	resize: both;
+	border-collapse: collapse;
+	height: 1px;
+}
+div.matrix table th {
+	border: 1px solid rgba(51,51,51,.25);
+}
+div.matrix table th.sticky-area {
+	height: 100%;
+	margin: 0;
+	justify-content: center;
+	align-items: center;
+	padding: 1rem;
+	text-align: center;
+	box-sizing: border-box;
+	background-color: rgba(51,51,51,.05);
+	cursor: grab;
+}
+div.matrix table td > div.group {
+	margin: 0;
+	height: 100%;
+	box-sizing: border-box;
+}
+div.add-col {
+	width: 4rem;
+}
+div.add-row {
+	height: 4rem;
+}
+div.add-col button,
+div.add-row button {
+	width: 100%;
+	height: 100%;
+/*	border: none;*/
+	font-size: 2rem;
+	cursor: pointer;
+}
+/*div.matrix div.group div.sticky-area {
+	display: none;
+}*/
 div.group {
 	position: absolute;
 	border: 1px solid rgba(51,51,51,.25);
@@ -133,9 +182,13 @@ div.group {
 	margin: 0 2rem 2rem 0;
 	z-index: 50;
 	resize: both;
-	max-width: 1000px;
+	max-width: 2000px;
 	resize: both;
 }
+div.group.immutable {
+	padding-top: 2rem;
+}
+div.matrix input[type=text],
 div.group input[type=text] {
 	display: block;
 	width: calc(100% - 2rem);
@@ -144,6 +197,10 @@ div.group input[type=text] {
 	font-family: Comic Sans MS;
 	font-size: 1.25rem;
 	margin-bottom: 15px;
+}
+div.matrix table th.sticky-area input[type=text] {
+	margin-bottom: 0;
+	text-align: center;
 }
 div.note {
 	background-color: yellow;
@@ -194,6 +251,9 @@ div.note.child,
 div.card.child {
 	position: relative;
 	vertical-align: top;
+}
+div.matrix.focus {
+	border: 1px solid rgba(51,51,51,1);
 }
 div.group.focus {
 	border: 1px solid rgba(51,51,51,.25);

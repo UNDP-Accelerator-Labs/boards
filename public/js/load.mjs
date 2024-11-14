@@ -1,6 +1,6 @@
 import { zoom } from './canvas/index.mjs';
-import { Note, Group, Card } from './elements/index.mjs';
-import { GET, POST, DELETE, wallId, uuid, tree } from './helpers/index.mjs';
+import { Note, Group, Card, Matrix } from './elements/index.mjs';
+import { GET, POST, DELETE, wallId, uuid, tree, computeCoordinates } from './helpers/index.mjs';
 import { connectToSocket, broadcast } from './websocket/index.mjs';
 import { loadData, addDatasource } from './data/index.mjs';
 
@@ -11,8 +11,14 @@ async function onLoad () {
 	const h = canvas.node().clientHeight || canvas.node().offsetHeight;
 	
 	// GET THE DATA
+	const matrixes = await GET(`/getMatrixes?wallId=${wallId}`);
+	matrixes.sort((a, b) => tree.getDepth(a.tree) - tree.getDepth(b.tree));
+	for (let i = 0; i < matrixes.length; i ++) {
+		const datum = matrixes[i];
+		await Matrix.add({ datum });
+	}
 	const groups = await GET(`/getGroups?wallId=${wallId}`);
-	groups.sort((a, b) => tree.getDepth(a.tree) - tree.getDepth(b.tree));
+	groups.sort((a, b) => (tree.getDepth(a.tree) - tree.getDepth(b.tree)) || (a.matrix_index - b.matrix_index));
 	for (let i = 0; i < groups.length; i ++) {
 		const datum = groups[i];
 		await Group.add({ datum });
@@ -54,9 +60,13 @@ async function onLoad () {
 		addDatasource(sourceinfo);
 	})
 
-	d3.select('button.add-note')
+	d3.select('button#addNote')
 	.on('click', async _ => {
 		await Note.add({ focus: true, bcast: true });
+	});
+	d3.select('button#addMatrix')
+	.on('click', async _ => {
+		await Matrix.add({ focus: true, bcast: true });
 	});
 
 	// d3.select('button.get-cards')
@@ -102,6 +112,13 @@ async function onLoad () {
 		// 	await POST('/addTitle', { data: text.datum(), project: wallId })
 		// 	text.each(d => d.id = response.id).select('input').node().focus()
 		// }
+	}).on('dblclick', async _ => {
+		const { x: ex, y: ey } = d3.event;
+		const ref = d3.select('.canvas');
+		const { x: ox, y: oy } = ref.node().getBoundingClientRect();
+		const { k } = ref.datum();
+		const [ x, y ] = computeCoordinates(k, ex, ey, ox, oy);
+		await Note.add({ focus: true, bcast: true, datum: { x, y } });
 	}).call(zoom);
 
 	d3.select(document).on('keydown', async _ => {
@@ -111,8 +128,6 @@ async function onLoad () {
 			const note = d3.select('div.note.focus');
 			if (note.node()) {
 				const { id } = note.datum();
-				// await DELETE(`/removeNote?noteId=${id}&wallId=${wallId}`);
-				// note.remove();
 				await Note.remove({ note, id, bcast: true });
 			}
 		}

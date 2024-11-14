@@ -17,8 +17,10 @@ function zooming () {
 	.select('div.origin')
 		.style('transform', d => `scale(${1 / d.k})`);
 
-	d3.selectAll('div.sticky-area')
-	.style('height', `${30 * 1 / t.k / 2}px`);
+	d3.selectAll('div.sticky-area:not(.immutable)')
+		.style('height', `${30 * 1 / t.k / 2}px`);
+	d3.selectAll('div.note, div.card, div.group, div.matrix')
+		.style('border-width', `${1 / t.k / 2}px`);
 }
 
 export const zoom = d3.zoom()

@@ -69,6 +69,12 @@ app.get('/getDatasources', routes.datasources.get);
 app.post('/addDatasource', routes.datasources.add);
 app.get('/increaseDatasource', routes.datasources.increase);
 
+app.get('/getMatrixes', routes.matrixes.get);
+app.post('/addMatrix', routes.matrixes.add);
+app.post('/updateMatrix', routes.matrixes.update);
+app.post('/updateMatrixes', routes.matrixes.updateMulti);
+app.delete('/removeMatrix', routes.matrixes.remove);
+
 app.post('/addTitle', routes.addTitle);
 app.post('/updateTitle', routes.updateTitle);
 app.post('/removeTitle', routes.removeTitle);

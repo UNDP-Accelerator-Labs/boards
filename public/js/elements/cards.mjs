@@ -1,4 +1,6 @@
 import { Group } from './groups.mjs';
+import { Note } from './notes.mjs';
+import { Matrix } from './matrixes.mjs';
 import { POST, DELETE, wallId, tree, computeAbsCoordinates } from '../helpers/index.mjs';
 import { drag } from './drag.mjs';
 import { broadcast } from '../websocket/index.mjs';
@@ -12,13 +14,15 @@ export const Card = {
 		if (!content) content = {};
 		// GET ALL UNMOVED NOTES, TO CHECK FOR VISUAL OVERLAP/CLUTTER AND OFFSET IF NEEDED
 		const otherCardsAtOrigin = d3.selectAll('div.card.unmoved');
-		if ([undefined, null].includes(x)) x = 300 * Math.floor(i / 10);
-		if ([undefined, null].includes(y)) y = 300 * (i % 10);
+		if (x === undefined) x = 300 * Math.floor(i / 10);
+		if (y === undefined) y = 300 * (i % 10);
 		// CHECK IF THIS IS A NEW CARD
 		if (!id) datum = await POST('/addCard', { data: { content, x, y }, project: wallId });
 		// REMOVE FOCUS FROM ALL OBJECTS
 		constructorRef.releaseAll(bcast);
+		Note.releaseAll(bcast);
 		Group.releaseAll(bcast);
+		Matrix.releaseAll(bcast);
 		//.classed('focus', false)
 		// CHECK IF THIS IS TO BE A CHILD GROUP
 		let parent = d3.select('div.canvas');
