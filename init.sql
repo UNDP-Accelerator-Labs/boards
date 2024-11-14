@@ -29,6 +29,7 @@ CREATE TABLE matrixes (
 CREATE TABLE notes (
 	id SERIAL PRIMARY KEY UNIQUE NOT NULL,
 	content TEXT,
+	color VARCHAR (7),
 	x DOUBLE PRECISION,
 	y DOUBLE PRECISION,
 	project INT REFERENCES projects (id) ON UPDATE CASCADE ON DELETE CASCADE,
@@ -43,6 +44,15 @@ CREATE TABLE cards (
 	project INT REFERENCES projects (id) ON UPDATE CASCADE ON DELETE CASCADE,
 	tree ltree DEFAULT text2ltree('0'),
 	source TEXT
+);
+
+CREATE TABLE titles (
+	id SERIAL PRIMARY KEY UNIQUE NOT NULL,
+	content TEXT,
+	x DOUBLE PRECISION,
+	y DOUBLE PRECISION,
+	project INT REFERENCES projects (id) ON UPDATE CASCADE ON DELETE CASCADE,
+	tree ltree DEFAULT text2ltree('0')
 );
 
 CREATE TABLE datasources (
