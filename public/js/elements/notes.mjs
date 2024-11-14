@@ -53,8 +53,8 @@ export const Note = {
 		.on('mousedown', async d => {
 			d3.event.stopPropagation();
 			// SAVE AND BROADCAST
-			await constructorRef.save(d);
-			constructorRef.broadcast({ operation: 'update', data: d });
+			note.datum().color = d;
+			constructorRef.update({ note, bcast: true });
 		}).on('mousemove', _ => {
 			d3.event.stopPropagation();
 		}).on('mouseup', _ => {
