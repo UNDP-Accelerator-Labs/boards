@@ -125,10 +125,15 @@ async function onLoad () {
 		const evt = d3.event;
 		// console.log(evt)
 		if (evt.key === 'Backspace' || evt.keyCode === 8) {
-			const note = d3.select('div.note.focus');
-			if (note.node()) {
-				const { id } = note.datum();
-				await Note.remove({ note, id, bcast: true });
+			const focus = d3.select('div.focus');
+			if (focus.node()) {
+				if (focus.classed('note')) {
+					const { id } = focus.datum();
+					await Note.remove({ note: focus, id, bcast: true });
+				} else if (focus.classed('matrix')) {
+					const { id } = focus.datum();
+					await Matrix.remove({ matrix: focus, id, bcast: true });
+				}
 			}
 		}
 		if (evt.key === '+' || evt.keyCode === 187) { //(evt.keyCode === 187 && evt.shiftKey)) {
