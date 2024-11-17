@@ -7,13 +7,13 @@ exports.get = (req, res) => {
 	.catch(err => console.log(err));
 }
 exports.add = (req, res) => {
-	const { content, color, x, y, tree } = req.body.data;
+	const { content, color, x, y, tree, pipe_from } = req.body.data;
 	const wallId = req.body.project;
 	DB.conn.one(`
-		INSERT INTO notes (content, color, x, y, project, tree)
-		VALUES ($1, $2, $3, $4, $5::INT, text2ltree($6))
+		INSERT INTO notes (content, color, x, y, project, tree, pipe_from)
+		VALUES ($1, $2, $3, $4, $5::INT, text2ltree($6), $7)
 		RETURNING *
-	;`, [content, color, x, y, wallId, tree || '0'])
+	;`, [content, color, x, y, wallId, tree || '0', pipe_from])
 	.then(data => res.status(200).json(data))
 	.catch(err => console.log(err));
 }

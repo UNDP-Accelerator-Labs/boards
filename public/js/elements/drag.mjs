@@ -113,6 +113,8 @@ async function dragEnd (d) {
 	const parent = d3.select(this.parentNode);
 
 	const hit = d3.select('div.hit');
+	let pipes = [];
+
 	if (hit.node()) {
 		// 1- CHECK IF THE HIT IS AN EXISTING GROUP
 		// OTHERWISE CREATE THE GROUP
@@ -123,9 +125,10 @@ async function dragEnd (d) {
 			groupping = hit;
 			d.x = null;
 			d.y = null;
-			const { id: gid, tree: gtree } = hit.datum();
+			const { id: gid, tree: gtree, pipe_to } = hit.datum();
 			// d.tree = tree.rebase(d.tree, gid, gtree);
 			d.tree = tree.build(gtree, gid);
+			if (Array.isArray(pipe_to) && pipe_to?.length) pipes = [ ...pipes, ...pipe_to ];
 
 		} else if (hit.classed('note') || hit.classed('card')) {
 			// IF THE HIT IS A NOTE OR CARD, CREATE A GROUP
@@ -150,6 +153,22 @@ async function dragEnd (d) {
 		d.x = x;
 		d.y = y;
 		d.tree = tree.getRoot(d.tree);
+
+		if (sel.classed('note')) { 
+		// REMOVE ALL PIPED NOTES FROM THE GROUP PIPED TO THE GROUP THE NOTE IS LEAVING
+			const note_pipes = d3.selectAll('div.note')
+				.filter(c => c.pipe_from === d.id);
+			if (note_pipes.size()) {
+				const notes = [...note_pipes.nodes()];
+				for (let n = 0; n < notes.length; n ++) {
+					const note = notes[n];
+					await Note.remove({ 
+						note: d3.select(note),
+						bcast: true,
+					});
+				}
+			}
+		}
 	}
 
 	if (sel.classed('note')) {
@@ -157,6 +176,7 @@ async function dragEnd (d) {
 			note: sel, 
 			datum: d,
 			bcast: true,
+			group_pipes: pipes,
 		});
 	} else if (sel.classed('card')) {
 		await Card.update({ 

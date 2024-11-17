@@ -71,7 +71,9 @@ export const tree = {
 	cutBranch: function (tree, node) {
 		const nodes = this.getNodes(tree);
 		const cut = nodes.indexOf(`${node}`);
-		nodes.splice(cut, 1);
-		return nodes.join('.');
+		if (cut !== -1) {
+			nodes.splice(cut, 1);
+			return nodes.join('.');
+		} else return tree;
 	},
 }

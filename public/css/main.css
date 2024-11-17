@@ -125,6 +125,9 @@ div.origin::after {
 div.dragging {
 	z-index: 1000 !important;
 }
+div.dragging *:not(.sticky-area) {
+	pointer-events: none;
+}
 div.matrix {
 	position: absolute;
 	display: grid;
@@ -205,6 +208,23 @@ div.group input[type=text] {
 div.matrix table th.sticky-area input[type=text] {
 	margin-bottom: 0;
 	text-align: center;
+}
+div.group button.pipe {
+	position: absolute;
+	width: 2rem;
+	height: 2rem;
+	right: 100%;
+	top: -1px;
+	z-index: 1001;
+}
+div.pipeline {
+	position: absolute;
+	background-color: rgba(51,51,51,.7);
+	width: 1px;
+	height: 5px;
+	border-radius: 5px;
+	transform-origin: top left;
+	z-index: 1000;
 }
 div.note {
 	background-color: yellow;

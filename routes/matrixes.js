@@ -3,9 +3,19 @@ const DB = require('../config.js');
 exports.get = (req, res) => {
 	const { wallId } = req.query;
 	DB.conn.any(`
+		WITH g AS (
+			SELECT g.*, 
+				COALESCE(json_agg(p.to) FILTER (WHERE p.to IS NOT NULL), '[]') AS pipe_to
+			FROM groups g
+			LEFT JOIN pipes p
+				ON p.from = g.id
+			WHERE g.project = $1::INT
+			GROUP BY g.id
+		)
+
 		SELECT m.*, json_agg(g.*) AS cells
 		FROM matrixes m
-		INNER JOIN groups g
+		INNER JOIN g
 			ON index(g.tree, text2ltree('m' || m.id)) = nlevel(g.tree) - 1
 		WHERE m.project = $1::INT
 		GROUP BY m.id

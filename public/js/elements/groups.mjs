@@ -3,6 +3,7 @@ import { Card } from './cards.mjs';
 import { Matrix } from './matrixes.mjs';
 import { POST, DELETE, wallId, tree, computeAbsCoordinates } from '../helpers/index.mjs';
 import { drag } from './drag.mjs';
+import { pipe } from './pipe.mjs';
 import { broadcast } from '../websocket/index.mjs';
 
 export const Group = {
@@ -42,6 +43,12 @@ export const Group = {
 				'transform': d => (![null, undefined].includes(d.x) && ![null, undefined].includes(d.y)) ? `translate(${d.x}px, ${d.y}px)` : null,
 				'grid-column-start': d => d.matrix_index ? +tree.getLeaf(d.matrix_index) + 2 : null,
 			});
+
+		// ADD AN OPTION TO PIPE GROUPS
+		group.addElems('button', 'pipe')
+			.html('@')
+		.call(pipe);
+
 		// ADD A STICKY AREA TO MOVE THE GROUP AROUND
 		if (!immutable) {
 			group.addElems('div', 'sticky-area');
