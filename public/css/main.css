@@ -220,6 +220,12 @@ div.group button.pipe {
 	z-index: 1001;
 	padding: 0;
 }
+/*div.group button.pipe.connected {
+	height: 100% !important;
+}
+button.pipe.connected span.flip {
+	transform: rotate(-90deg);
+}*/
 div.pipeline {
 	position: absolute;
 	background-color: rgba(51,51,51,.7);

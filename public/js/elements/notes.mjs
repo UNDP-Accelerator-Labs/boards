@@ -161,19 +161,37 @@ export const Note = {
 			constructorRef.broadcast({ operation: 'update', data: note.datum() });
 		}
 		// CHECK FOR PIPING
-		if (group_pipes?.length) {
-			for (let p = 0; p < group_pipes.length; p ++) {
-				const pipe = group_pipes[p];
-				let { tree: ptree } = d3.selectAll('div.group')
-					.filter(d => d.id === pipe).datum();
-				// REPLACE THE PIPED GROUP'S ID IN THE tree
-				ptree = tree.update(ptree || '0', pipe);
-				const { id: forget_id, tree: forget_tree, x: forget_x, y: forget_y, pipe_from: forget_piping, ...data_to_pass } = note.datum();
-				await constructorRef.update({ 
-					datum: { ...data_to_pass, ...{ tree: ptree, x: null, y: null, pipe_from: nid } },
-					bcast,
-				});
-				
+
+		console.log('group pipes', group_pipes)
+		if (group_pipes !== undefined) {
+			if (group_pipes?.length) {
+				// ADD THE NOTES TO THE PIPED GROUP
+				for (let p = 0; p < group_pipes.length; p ++) {
+					const pipe = group_pipes[p];
+					let { tree: ptree } = d3.selectAll('div.group')
+						.filter(d => d.id === pipe).datum();
+					// REPLACE THE PIPED GROUP'S ID IN THE tree
+					ptree = tree.update(ptree || '0', pipe);
+					const { id: forget_id, tree: forget_tree, x: forget_x, y: forget_y, pipe_from: forget_piping, ...data_to_pass } = note.datum();
+					await constructorRef.update({ 
+						datum: { ...data_to_pass, ...{ tree: ptree, x: null, y: null, pipe_from: nid } },
+						bcast,
+					});
+					
+				}
+			} else {
+				// REMOVE THE NOTES FROM THE PIPED GROUP
+				const note_pipes = d3.selectAll('div.note')
+					.filter(d => d.pipe_from === nid);
+				if (note_pipes.size()) {
+					const notes = [...note_pipes.nodes()];
+					for (let n = 0; n < notes.length; n ++) {
+						await constructorRef.remove({ 
+							note: d3.select(notes[n]),
+							bcast,
+						});
+					}
+				}
 			}
 		}
 		if (pipe_note) {

@@ -76,6 +76,7 @@ app.post('/updateMatrixes', routes.matrixes.updateMulti);
 app.delete('/removeMatrix', routes.matrixes.remove);
 
 app.post('/addPipe', routes.pipes.add);
+app.delete('/removePipe', routes.pipes.remove);
 
 app.post('/addTitle', routes.addTitle);
 app.post('/updateTitle', routes.updateTitle);

@@ -2,7 +2,7 @@ import { Note } from './notes.mjs';
 import { Group } from './groups.mjs';
 import { Card } from './cards.mjs';
 import { Matrix } from './matrixes.mjs';
-import { POST, wallId, checkContain, cartesianToPolar } from '../helpers/index.mjs';
+import { POST, DELETE, checkContain, cartesianToPolar } from '../helpers/index.mjs';
 import { broadcast } from '../websocket/index.mjs';
 
 function pipeStart (d) {
@@ -116,8 +116,7 @@ function piping (d) {
 	// BROADCAST THE PIPE
 }
 async function pipeEnd (d) {
-	const sel = d3.select(this)
-		.classed('dragging', false);
+	const sel = d3.select(this);
 	const { id } = d;
 
 	d3.selectAll('.pipeline')
@@ -127,9 +126,14 @@ async function pipeEnd (d) {
 	const hit = d3.select('div.hit');
 	
 	if (hit.node()) {
-		const from = hit.datum().id;
+		const { id: from, label, matrix_index } = hit.datum();
 		const to = id;
-		await POST('/addPipe', { data: { from, to } });
+		await POST('/addPipe', { from, to });
+		
+		// sel.classed('connected', true)
+		// .addElems('span', 'flip')
+		// .html(`Piped to: ${label || `matrix cell ${matrix_index}` || 'unlabeled group'}`)
+
 		// UPDATE GROUP TO PIPE FROM
 		const [ datum ] = d3.selectAll('div.group')
 			.filter(d => d.id === from).data();
@@ -141,8 +145,11 @@ async function pipeEnd (d) {
 			datum: { id: from, pipe_to },
 			bcast: true,
 		})
-
-	} else console.log('no group to pipe to');
+	} else {
+		console.log('no group to pipe to');
+		const to = id;
+		await DELETE(`/removePipe?to=${to}`);
+	}
 }
 
 export const pipe = d3.drag()

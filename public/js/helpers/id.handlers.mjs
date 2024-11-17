@@ -30,6 +30,17 @@ export const tree = {
 	getNodes: function (tree) {
 		return tree?.split('.') || [];
 	},
+	getDivergence: function (oldtree, newtree) {
+		const oNodes = this.getNodes(oldtree);
+		const nNodes = this.getNodes(newtree);
+		let divergentNodes = [];
+		for (let i = 0; i < Math.max(oNodes.length, nNodes.length); i ++) {
+			if (oNodes[i] !== nNodes[i]) {
+				divergentNodes.push({ old: oNodes[i], new: nNodes[i], position: i });
+			}
+		}
+		return divergentNodes;
+	},
 	moveUp: function (tree) {
 		const depth = this.getDepth(tree);
 		if (depth === 1) return this.getRoot(tree);

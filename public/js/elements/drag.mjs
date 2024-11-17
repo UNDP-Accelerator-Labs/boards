@@ -111,6 +111,7 @@ async function dragEnd (d) {
 	const sel = d3.select(this)
 		.classed('dragging', false);
 	const parent = d3.select(this.parentNode);
+	const otree = d.tree;
 
 	const hit = d3.select('div.hit');
 	let pipes = [];
@@ -147,49 +148,11 @@ async function dragEnd (d) {
 			d.tree = tree.build(gtree, gid);
 		}
 		hit.classed('hit', false);
-
-		// TO DO:
-		// CHECK FOR CHANGES IN PIPED GROUPS
-		// FOR EXAMPLE IF A NOTE IS REMOVED FROM A PIPED GROUP
-		// AND PLACED IN ANOTHER GROUP
-		/*
-		if (sel.classed('note')) { 
-		// REMOVE ALL PIPED NOTES FROM THE GROUP PIPED TO THE GROUP THE NOTE IS LEAVING
-			const note_pipes = d3.selectAll('div.note')
-				.filter(c => c.pipe_from === d.id);
-			if (note_pipes.size()) {
-				const notes = [...note_pipes.nodes()];
-				for (let n = 0; n < notes.length; n ++) {
-					const note = notes[n];
-					await Note.remove({ 
-						note: d3.select(note),
-						bcast: true,
-					});
-				}
-			}
-		}
-		*/
 	} else { // THE OBJECT IS MOVED OUT OF ALL GROUPS
 		const [ x, y ] = computeAbsCoordinates(sel, d3.select('.canvas'));
 		d.x = x;
 		d.y = y;
 		d.tree = tree.getRoot(d.tree);
-
-		if (sel.classed('note')) { 
-		// REMOVE ALL PIPED NOTES FROM THE GROUP PIPED TO THE GROUP THE NOTE IS LEAVING
-			const note_pipes = d3.selectAll('div.note')
-				.filter(c => c.pipe_from === d.id);
-			if (note_pipes.size()) {
-				const notes = [...note_pipes.nodes()];
-				for (let n = 0; n < notes.length; n ++) {
-					const note = notes[n];
-					await Note.remove({ 
-						note: d3.select(note),
-						bcast: true,
-					});
-				}
-			}
-		}
 	}
 
 	if (sel.classed('note')) {
