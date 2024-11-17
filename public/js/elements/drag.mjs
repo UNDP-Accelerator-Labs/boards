@@ -144,10 +144,31 @@ async function dragEnd (d) {
 			d.x = null;
 			d.y = null;
 			const { id: gid, tree: gtree } = groupping.datum();
-			// d.tree = tree.rebase(d.tree, gid, gtree);
 			d.tree = tree.build(gtree, gid);
 		}
 		hit.classed('hit', false);
+
+		// TO DO:
+		// CHECK FOR CHANGES IN PIPED GROUPS
+		// FOR EXAMPLE IF A NOTE IS REMOVED FROM A PIPED GROUP
+		// AND PLACED IN ANOTHER GROUP
+		/*
+		if (sel.classed('note')) { 
+		// REMOVE ALL PIPED NOTES FROM THE GROUP PIPED TO THE GROUP THE NOTE IS LEAVING
+			const note_pipes = d3.selectAll('div.note')
+				.filter(c => c.pipe_from === d.id);
+			if (note_pipes.size()) {
+				const notes = [...note_pipes.nodes()];
+				for (let n = 0; n < notes.length; n ++) {
+					const note = notes[n];
+					await Note.remove({ 
+						note: d3.select(note),
+						bcast: true,
+					});
+				}
+			}
+		}
+		*/
 	} else { // THE OBJECT IS MOVED OUT OF ALL GROUPS
 		const [ x, y ] = computeAbsCoordinates(sel, d3.select('.canvas'));
 		d.x = x;

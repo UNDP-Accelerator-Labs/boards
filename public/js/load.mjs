@@ -64,6 +64,10 @@ async function onLoad () {
 	.on('click', async _ => {
 		await Note.add({ focus: true, bcast: true });
 	});
+	d3.select('button#addGroup')
+	.on('click', async _ => {
+		await Group.add({ focus: true, bcast: true });
+	});
 	d3.select('button#addMatrix')
 	.on('click', async _ => {
 		await Matrix.add({ focus: true, bcast: true });

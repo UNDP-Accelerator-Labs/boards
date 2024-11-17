@@ -213,9 +213,12 @@ div.group button.pipe {
 	position: absolute;
 	width: 2rem;
 	height: 2rem;
+	min-height: 30px;
+	min-width: 30px;
 	right: 100%;
 	top: -1px;
 	z-index: 1001;
+	padding: 0;
 }
 div.pipeline {
 	position: absolute;

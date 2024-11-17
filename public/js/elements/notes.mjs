@@ -167,7 +167,7 @@ export const Note = {
 				let { tree: ptree } = d3.selectAll('div.group')
 					.filter(d => d.id === pipe).datum();
 				// REPLACE THE PIPED GROUP'S ID IN THE tree
-				ptree = tree.update(ptree, pipe);
+				ptree = tree.update(ptree || '0', pipe);
 				const { id: forget_id, tree: forget_tree, x: forget_x, y: forget_y, pipe_from: forget_piping, ...data_to_pass } = note.datum();
 				await constructorRef.update({ 
 					datum: { ...data_to_pass, ...{ tree: ptree, x: null, y: null, pipe_from: nid } },

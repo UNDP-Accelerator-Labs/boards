@@ -19,6 +19,11 @@ function zooming () {
 
 	d3.selectAll('div.sticky-area:not(.immutable)')
 		.style('height', `${Math.min(75, 30 * 1 / t.k / 2)}px`);
+	d3.selectAll('button.pipe')
+		.styles({
+			'width': `${Math.min(75, 30 * 1 / t.k / 2)}px`,
+			'height': `${Math.min(75, 30 * 1 / t.k / 2)}px`,
+		});
 	d3.selectAll('div.note, div.card, div.group, div.matrix')
 		.style('border-width', `${1 / t.k / 2}px`);
 }

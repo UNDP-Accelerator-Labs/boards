@@ -2,7 +2,7 @@ const DB = require('../config.js');
 
 exports.add = (req, res) => {
 	const { from, to } = req.body.data;
-	DB.conn.none(`
+	DB.conn.one(`
 		INSERT INTO pipes ("from", "to")
 		VALUES ($1::INT, $2::INT)
 		RETURNING *

@@ -45,7 +45,7 @@ export const Group = {
 			});
 
 		// ADD AN OPTION TO PIPE GROUPS
-		group.addElems('button', 'pipe')
+		group.addElems('button', 'btn pipe')
 			.html('@')
 		.call(pipe);
 
