@@ -11,6 +11,9 @@ h1, h2 {
 h2 small {
 	font-size: .5em;
 }
+.deactivate {
+	pointer-events: none;
+}
 div.overlay {
 	position: absolute;
 	display: flex;

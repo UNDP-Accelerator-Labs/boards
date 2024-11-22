@@ -27,6 +27,10 @@ export const tree = {
 		}
 		return false;
 	},
+	hasNode: function (tree, node) {
+		const nodes = this.getNodes(tree);
+		return nodes.includes(node?.toString());
+	},
 	getNodes: function (tree) {
 		return tree?.split('.') || [];
 	},

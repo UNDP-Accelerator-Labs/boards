@@ -35,8 +35,15 @@ function dragStart (d) {
 				d.x = 0;
 				d.y = 0;
 			}
+			// DEACTIVATE ALL textareas AND inputs
+			d3.select('div.canvas').selectAll('textarea, input')
+			.classed('deactivate', true);
+		} else {
+			sel.classed('dragging', false);
+			// REACTIVATE ALL textareas AND inputs
+			d3.select('div.canvas').selectAll('textarea, input')
+			.classed('deactivate', false);
 		}
-		else sel.classed('dragging', false);
 	}
 
 	let object;
@@ -110,6 +117,10 @@ async function dragEnd (d) {
 
 	const sel = d3.select(this)
 		.classed('dragging', false);
+	// REACTIVATE ALL textareas AND inputs
+	d3.select('div.canvas').selectAll('textarea, input')
+	.classed('deactivate', false);
+
 	const parent = d3.select(this.parentNode);
 	const otree = d.tree;
 
@@ -127,13 +138,12 @@ async function dragEnd (d) {
 			d.x = null;
 			d.y = null;
 			const { id: gid, tree: gtree, pipe_to } = hit.datum();
-			// d.tree = tree.rebase(d.tree, gid, gtree);
 			d.tree = tree.build(gtree, gid);
 			if (Array.isArray(pipe_to) && pipe_to?.length) pipes = [ ...pipes, ...pipe_to ];
-
+			
 		} else if (hit.classed('note') || hit.classed('card')) {
 			// IF THE HIT IS A NOTE OR CARD, CREATE A GROUP
-			const { x, y, tree: ntree } = hit.datum();
+			const { x, y, tree: ntree, piped_from } = hit.datum();
 
 			groupping = await Group.add({ 
 				parent: d3.select(hit.node().parentNode),
@@ -146,6 +156,25 @@ async function dragEnd (d) {
 			d.y = null;
 			const { id: gid, tree: gtree } = groupping.datum();
 			d.tree = tree.build(gtree, gid);
+
+			// IF THE hit note IS INSIDE A PIPED GROUP, PIPE THE dragged NOTE
+			if (tree.getDepth(d.tree) > 1) {
+				// CHECK ALL THE PARENT GROUPS FOR PIPING
+				const nodes = tree.getNodes(d.tree);
+				let i = nodes.length - 1;
+				
+				while (i >= 0) {
+					const group = d3.selectAll('div.group')
+					.filter(d => d.id === +nodes[i]);
+					
+					if (group.node()) {
+						const { pipe_to } = group.datum();
+						if (Array.isArray(pipe_to) && pipe_to?.length) pipes = [ ...pipes, ...pipe_to ];
+					}
+					i--;
+				}
+				
+			}
 		}
 		hit.classed('hit', false);
 	} else { // THE OBJECT IS MOVED OUT OF ALL GROUPS
@@ -158,7 +187,7 @@ async function dragEnd (d) {
 	if (sel.classed('note')) {
 		await Note.update({ 
 			note: sel, 
-			datum: d,
+			datum: { ...d, ...{ pipe_from: null } },
 			bcast: true,
 			group_pipes: pipes,
 		});

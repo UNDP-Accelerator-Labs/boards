@@ -18,7 +18,7 @@ exports.add = (req, res) => {
 	.catch(err => console.log(err));
 }
 exports.update = (req, res) => {
-	const { content, color, x, y, tree, id } = req.body.data;
+	const { content, color, x, y, tree, pipe_from, id } = req.body.data;
 	const wallId = req.body.project;
 	DB.conn.none(`
 		UPDATE notes 
@@ -26,10 +26,11 @@ exports.update = (req, res) => {
 		color = $2,
 		x = $3,
 		y = $4,
-		tree = text2ltree($5)
-		WHERE id = $6::INT
-		AND project = $7::INT
-	;`, [content, color, x, y, tree, id, wallId])
+		tree = text2ltree($5),
+		pipe_from = $6
+		WHERE id = $7::INT
+		AND project = $8::INT
+	;`, [content, color, x, y, tree, pipe_from, id, wallId])
 	.then(_ => res.status(200).json({ response: 'Successfully saved.' }))
 	.catch(err => console.log(err));
 }

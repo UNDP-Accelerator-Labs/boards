@@ -2,7 +2,7 @@ import { Note } from './notes.mjs';
 import { Group } from './groups.mjs';
 import { Card } from './cards.mjs';
 import { Matrix } from './matrixes.mjs';
-import { POST, DELETE, checkContain, cartesianToPolar } from '../helpers/index.mjs';
+import { POST, DELETE, tree, checkContain, cartesianToPolar } from '../helpers/index.mjs';
 import { broadcast } from '../websocket/index.mjs';
 
 function pipeStart (d) {
@@ -144,11 +144,34 @@ async function pipeEnd (d) {
 		await Group.update({
 			datum: { id: from, pipe_to },
 			bcast: true,
-		})
+		});
 	} else {
-		console.log('no group to pipe to');
+		console.log('no group to pipe to. Unlinking everything.');
 		const to = id;
 		await DELETE(`/removePipe?to=${to}`);
+		// UPDATE THE FRONT END
+		const [ datum ] = d3.selectAll('div.group')
+			.filter(d => d.pipe_to.includes(to)).data();
+		let { id: from, pipe_to } = datum || {};
+		pipe_to = pipe_to.filter(d => d !== to);
+		// UPDATE THE PIPED GROUP
+		await Group.update({
+			datum: { id: from, pipe_to },
+			bcast: true,
+		});
+		// UPDATE THE PIPED NOTES
+		const note_pipes = d3.selectAll('div.note')
+			.filter(d => tree.hasNode(d.tree, to));
+		if (note_pipes.size()) {
+			const notes = [...note_pipes.nodes()];
+			for (let n = 0; n < notes.length; n ++) {
+				await Note.update({ 
+					note: d3.select(notes[n]),
+					datum: { pipe_from: null },
+					bcast: true,
+				});
+			}
+		}
 	}
 }
 

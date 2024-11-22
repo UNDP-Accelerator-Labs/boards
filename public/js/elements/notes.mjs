@@ -93,10 +93,17 @@ export const Note = {
 			constructorRef.lock({ note, id, bcast: true });
 		}).on('focusout', async function (d) {
 			// SAVE AND BROADCAST
+			const disconnect_from_pipe = this.value.trim() !== d.content;
 			d.content = this.value.trim() || d.content;
+
+			const datum = {};
+			datum.content = d.content;
+			if (d.pipe_from && disconnect_from_pipe) datum.pipe_from = null;
+
 			await constructorRef.update({ 
 				note, 
-				datum: { content: d.content },
+				// datum: { content: d.content, pipe_from: disconnect_from_pipe ? null : d.pipe_from },
+				datum,
 				bcast: true,
 				pipe_note: true,
 			});
@@ -161,8 +168,6 @@ export const Note = {
 			constructorRef.broadcast({ operation: 'update', data: note.datum() });
 		}
 		// CHECK FOR PIPING
-
-		console.log('group pipes', group_pipes)
 		if (group_pipes !== undefined) {
 			if (group_pipes?.length) {
 				// ADD THE NOTES TO THE PIPED GROUP
