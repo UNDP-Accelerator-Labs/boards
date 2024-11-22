@@ -27,8 +27,23 @@ export const tree = {
 		}
 		return false;
 	},
+	hasNode: function (tree, node) {
+		const nodes = this.getNodes(tree);
+		return nodes.includes(node?.toString());
+	},
 	getNodes: function (tree) {
 		return tree?.split('.') || [];
+	},
+	getDivergence: function (oldtree, newtree) {
+		const oNodes = this.getNodes(oldtree);
+		const nNodes = this.getNodes(newtree);
+		let divergentNodes = [];
+		for (let i = 0; i < Math.max(oNodes.length, nNodes.length); i ++) {
+			if (oNodes[i] !== nNodes[i]) {
+				divergentNodes.push({ old: oNodes[i], new: nNodes[i], position: i });
+			}
+		}
+		return divergentNodes;
 	},
 	moveUp: function (tree) {
 		const depth = this.getDepth(tree);
@@ -71,7 +86,9 @@ export const tree = {
 	cutBranch: function (tree, node) {
 		const nodes = this.getNodes(tree);
 		const cut = nodes.indexOf(`${node}`);
-		nodes.splice(cut, 1);
-		return nodes.join('.');
+		if (cut !== -1) {
+			nodes.splice(cut, 1);
+			return nodes.join('.');
+		} else return tree;
 	},
 }

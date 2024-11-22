@@ -14,15 +14,16 @@ export const Note = {
 		const constructorRef = this;
 		let { datum, focus, bcast, client } = _kwargs;
 		if (!datum) datum = {}; // MAKE SURE THERE IS A datum OBJECT TO DESTRUCTURE BELOW
-		let { content, color, x, y, id, tree: ntree } = datum;
+		let { content, color, x, y, id, tree: ntree, pipe_from } = datum;
 		if (!content) content = '';
 		if (!color) color = colors(0);
+		const { k } = d3.select('div.canvas').datum();
 		// GET ALL UNMOVED NOTES, TO CHECK FOR VISUAL OVERLAP/CLUTTER AND OFFSET IF NEEDED
 		const otherNotesAtOrigin = d3.selectAll('div.note.unmoved');
 		if (x === undefined) x = 10 * otherNotesAtOrigin.size();
 		if (y === undefined) y = 10 * otherNotesAtOrigin.size();
 		// CHECK IF THIS IS A NEW NOTE
-		if (!id) datum = await POST('/addNote', { data: { content, color, x, y, tree: ntree }, project: wallId });
+		if (!id) datum = await POST('/addNote', { data: { content, color, x, y, tree: ntree, pipe_from }, project: wallId });
 		// REMOVE FOCUS FROM ALL OBJECTS
 		constructorRef.releaseAll(bcast);
 		Card.releaseAll(bcast);
@@ -46,22 +47,30 @@ export const Note = {
 			.styles({ 
 				'transform': d => (![null, undefined].includes(d.x) && ![null, undefined].includes(d.y)) ? `translate(${d.x}px, ${d.y}px)` : null, 
 				'background-color': d => d.color,
-			});
+			})
+		.on('dblclick', function () {
+			d3.event.stopPropagation();
+		});
 		// ADD A SIDEBAR TO SELECT THE COLOR OF THE NOTE
 		note.addElems('div', 'color-swatches')
 			.addElems('div', 'color', d3.range(nColors).map(d => colors(d)))
 		.on('mousedown', async d => {
 			d3.event.stopPropagation();
 			// SAVE AND BROADCAST
-			note.datum().color = d;
-			constructorRef.update({ note, bcast: true });
+			await constructorRef.update({ 
+				note,
+				datum: { color: d },
+				bcast: true,
+				pipe_note: true,
+			});
 		}).on('mousemove', _ => {
 			d3.event.stopPropagation();
 		}).on('mouseup', _ => {
 			d3.event.stopPropagation();
 		}).style('background-color', d => d);
 		// ADD A STICKY AREA TO MOVE THE NOTE AROUND
-		note.addElems('div', 'sticky-area');
+		note.addElems('div', 'sticky-area')
+			.style('height', `${Math.min(75, 30 * 1 / k / 2)}px`);
 		// ADD THE TEXT AREA IN THE NOTE
 		const input = note.addElems('textarea')
 		.each(function (d) { this.value = d.content })
@@ -84,9 +93,20 @@ export const Note = {
 			constructorRef.lock({ note, id, bcast: true });
 		}).on('focusout', async function (d) {
 			// SAVE AND BROADCAST
+			const disconnect_from_pipe = this.value.trim() !== d.content;
 			d.content = this.value.trim() || d.content;
-			await constructorRef.save(d);
-			constructorRef.broadcast({ operation: 'update', data: d });
+
+			const datum = {};
+			datum.content = d.content;
+			if (d.pipe_from && disconnect_from_pipe) datum.pipe_from = null;
+
+			await constructorRef.update({ 
+				note, 
+				// datum: { content: d.content, pipe_from: disconnect_from_pipe ? null : d.pipe_from },
+				datum,
+				bcast: true,
+				pipe_note: true,
+			});
 		});
 		if (focus) input.node().focus();
 		
@@ -100,11 +120,20 @@ export const Note = {
 	},
 	update: async function (_kwargs) {
 		const constructorRef = this;
-		let { note, datum, bcast } = _kwargs;
+		let { note, datum, group_pipes, pipe_note, bcast } = _kwargs;
 		if (!note) {
-			const { id } = datum;
-			note = d3.selectAll('div.note')
-				.filter(d => d.id === id);
+			const { id, pipe_from } = datum;
+			if (id) {
+				note = d3.selectAll('div.note')
+					.filter(d => d.id === id);
+			} else if (pipe_from) {
+				note = d3.selectAll('div.note')
+					.filter(d => d.pipe_from === pipe_from);
+			}
+			// IF NO NOTE IS FOUND, CREATE THE NOTE
+			if (!note.node()) { // THE NOTE DOES NOT YET EXIST
+				return constructorRef.add({ datum, bcast });
+			}
 		}
 		if (datum) {
 			note.each(d => {
@@ -113,7 +142,7 @@ export const Note = {
 				}
 			});
 		};
-		const { tree: ntree } = note.datum();
+		const { tree: ntree, id: nid, content } = note.datum();
 		const child = tree.getDepth(ntree) > 1;
 
 		if (!child && !note.node().parentNode.classList.contains('canvas')) {
@@ -138,6 +167,52 @@ export const Note = {
 			await constructorRef.save(note.datum());
 			constructorRef.broadcast({ operation: 'update', data: note.datum() });
 		}
+		// CHECK FOR PIPING
+		if (group_pipes !== undefined) {
+			if (group_pipes?.length) {
+				// ADD THE NOTES TO THE PIPED GROUP
+				for (let p = 0; p < group_pipes.length; p ++) {
+					const pipe = group_pipes[p];
+					let { tree: ptree } = d3.selectAll('div.group')
+						.filter(d => d.id === pipe).datum();
+					// REPLACE THE PIPED GROUP'S ID IN THE tree
+					ptree = tree.update(ptree || '0', pipe);
+					const { id: forget_id, tree: forget_tree, x: forget_x, y: forget_y, pipe_from: forget_piping, ...data_to_pass } = note.datum();
+					await constructorRef.update({ 
+						datum: { ...data_to_pass, ...{ tree: ptree, x: null, y: null, pipe_from: nid } },
+						bcast,
+					});
+					
+				}
+			} else {
+				// REMOVE THE NOTES FROM THE PIPED GROUP
+				const note_pipes = d3.selectAll('div.note')
+					.filter(d => d.pipe_from === nid);
+				if (note_pipes.size()) {
+					const notes = [...note_pipes.nodes()];
+					for (let n = 0; n < notes.length; n ++) {
+						await constructorRef.remove({ 
+							note: d3.select(notes[n]),
+							bcast,
+						});
+					}
+				}
+			}
+		}
+		if (pipe_note) {
+			const note_pipes = d3.selectAll('div.note')
+				.filter(d => d.pipe_from === nid);
+			if (note_pipes.size()) {
+				const notes = [...note_pipes.nodes()];
+				for (let n = 0; n < notes.length; n ++) {
+					await constructorRef.update({ 
+						note: d3.select(notes[n]),
+						datum,
+						bcast,
+					});
+				}
+			}
+		}
 		return note;
 	},
 	remove: async function (_kwargs) {
@@ -149,10 +224,48 @@ export const Note = {
 			note = d3.selectAll('div.note')
 				.filter(d => d.id === id);
 		}
+		const { id: nid, tree: ntree } = note.datum();
 		// DELETE AND BROADCAST
 		if (bcast) {
 			await constructorRef.delete(note.datum().id);
 			constructorRef.broadcast({ operation: 'delete', data: { id: note.datum().id } });
+		}
+		// DELETE ALL PIPED NOTES
+		const note_pipes = d3.selectAll('div.note')
+			.filter(d => d.pipe_from === nid);
+		if (note_pipes.size()) {
+			const notes = [...note_pipes.nodes()];
+			for (let n = 0; n < notes.length; n ++) {
+				await constructorRef.remove({ 
+					note: d3.select(notes[n]),
+					bcast,
+				});
+			}
+		}
+		// IF THE PARENT IS A GROUP AND THIS IS THE LAST ELEMENT IN THE GROUP
+		// REMOVE THE GROUP
+		const child = tree.getDepth(ntree) > 1;
+		if (child) {
+			const nodes = tree.getNodes(ntree);
+			let i = nodes.length - 1;
+			while (i >= 0) {
+				const group = d3.selectAll('div.group')
+				.filter(d => d.id === +nodes[i]);
+				
+				if (group.node()) {
+					// IF THE GROUP CONTAINS ONLY ONE OR LESS CHILDREN THEN THE LAST
+					// CHILD REMAINING IS THE CURRENT NODE BEING REMOVED
+					// SO THE GROUP CAN BE REMOVED AS WELL
+					const children = group.selectAll('div.group, div.note, div.card').size();
+					if (children <= 1) {
+						await Group.remove({
+							group,
+							bcast,
+						})
+					}
+				}
+				i--;
+			}
 		}
 
 		note.remove();

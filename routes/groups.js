@@ -3,9 +3,14 @@ const DB = require('../config.js');
 exports.get = (req, res) => {
 	const { wallId } = req.query;
 	DB.conn.any(`
-		SELECT * FROM groups 
-		WHERE project = $1::INT
-		AND matrix_index IS NULL
+		SELECT g.*, 
+			COALESCE(json_agg(p.to) FILTER (WHERE p.to IS NOT NULL), '[]') AS pipe_to
+		FROM groups g
+		LEFT JOIN pipes p
+			ON p.from = g.id
+		WHERE g.project = $1::INT
+		AND g.matrix_index IS NULL
+		GROUP BY g.id
 	;`, [wallId])
 	.then(data => res.status(200).json(data))
 	.catch(err => console.log(err));
@@ -17,7 +22,7 @@ exports.add = (req, res) => {
 		INSERT INTO groups (label, x, y, project, tree, matrix_index)
 		VALUES ($1, $2, $3, $4::INT, text2ltree($5), text2ltree($6))
 		RETURNING *
-	;`, [label, x, y, wallId, tree, matrix_index])
+	;`, [label, x, y, wallId, tree || '0', matrix_index])
 	.then(data => res.status(200).json(data))
 	.catch(err => console.log(err));
 }

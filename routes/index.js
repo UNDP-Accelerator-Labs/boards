@@ -5,6 +5,7 @@ exports.cards = require('./cards.js');
 exports.groups = require('./groups.js');
 exports.matrixes = require('./matrixes.js');
 exports.datasources = require('./datasources.js');
+exports.pipes = require('./pipes.js');
 
 exports.home = (req, res) => {
 	DB.conn.tx(t => {

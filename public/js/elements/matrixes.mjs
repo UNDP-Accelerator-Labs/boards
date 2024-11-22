@@ -50,6 +50,8 @@ export const Matrix = {
 				'transform': d => (![null, undefined].includes(d.x) && ![null, undefined].includes(d.y)) ? `translate(${d.x}px, ${d.y}px)` : null,
 				// 'grid-template-columns': d => `.5fr, repeat(${d.cols.length}, 1fr)`,
 			});
+		// ADD GLOBAL STICKY AREA TO MOVE THE MATRIX AROUND
+		matrix.addElems('div', 'sticky-area');
 		const table = matrix.addElems('table');
 		// ADD STICKY AREAS TO EACH COLUMN HEADER TO MOVE THE MATRIX AROUND
 		const thead = table.addElems('tr', 'head');
@@ -228,7 +230,9 @@ export const Matrix = {
 					matrix.each(d => {
 						if (!d.cells) d.cells = [];
 						d.cells.push(group.datum());
-					})
+					});
+					// TO DO: INVESTIGATE THIS
+					// LIKELY WHERE THE DISPATCH ISSUE IS COMING FROM
 				}
 			}
 		}

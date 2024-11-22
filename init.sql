@@ -33,7 +33,8 @@ CREATE TABLE notes (
 	x DOUBLE PRECISION,
 	y DOUBLE PRECISION,
 	project INT REFERENCES projects (id) ON UPDATE CASCADE ON DELETE CASCADE,
-	tree ltree DEFAULT text2ltree('0')
+	tree ltree DEFAULT text2ltree('0'),
+	pipe_from INT REFERENCES notes (id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE cards (
@@ -63,6 +64,12 @@ CREATE TABLE datasources (
 	total INT,
 	project INT REFERENCES projects (id) ON UPDATE CASCADE ON DELETE CASCADE
 );
+
+CREATE TABLE pipes (
+	"from" INT REFERENCES groups (id) ON UPDATE CASCADE ON DELETE CASCADE,
+	"to" INT UNIQUE REFERENCES groups (id) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
 
 CREATE TABLE session (
     sid varchar NOT NULL COLLATE "default",
