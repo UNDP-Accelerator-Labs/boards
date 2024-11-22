@@ -148,28 +148,32 @@ async function pipeEnd (d) {
 	} else {
 		console.log('no group to pipe to. Unlinking everything.');
 		const to = id;
-		await DELETE(`/removePipe?to=${to}`);
-		// UPDATE THE FRONT END
+		// TO DO: FIX THIS
+		// GET THE GROUP THE CURRENT SELECTION IS PIPED TO
 		const [ datum ] = d3.selectAll('div.group')
 			.filter(d => d.pipe_to.includes(to)).data();
-		let { id: from, pipe_to } = datum || {};
-		pipe_to = pipe_to.filter(d => d !== to);
-		// UPDATE THE PIPED GROUP
-		await Group.update({
-			datum: { id: from, pipe_to },
-			bcast: true,
-		});
-		// UPDATE THE PIPED NOTES
-		const note_pipes = d3.selectAll('div.note')
-			.filter(d => tree.hasNode(d.tree, to));
-		if (note_pipes.size()) {
-			const notes = [...note_pipes.nodes()];
-			for (let n = 0; n < notes.length; n ++) {
-				await Note.update({ 
-					note: d3.select(notes[n]),
-					datum: { pipe_from: null },
-					bcast: true,
-				});
+		if (datum !== undefined) {
+			await DELETE(`/removePipe?to=${to}`);
+			// UPDATE THE FRONT END
+			let { id: from, pipe_to } = datum || {};
+			pipe_to = pipe_to.filter(d => d !== to);
+			// UPDATE THE PIPED GROUP
+			await Group.update({
+				datum: { id: from, pipe_to },
+				bcast: true,
+			});
+			// UPDATE THE PIPED NOTES
+			const note_pipes = d3.selectAll('div.note')
+				.filter(d => tree.hasNode(d.tree, to));
+			if (note_pipes.size()) {
+				const notes = [...note_pipes.nodes()];
+				for (let n = 0; n < notes.length; n ++) {
+					await Note.update({ 
+						note: d3.select(notes[n]),
+						datum: { pipe_from: null },
+						bcast: true,
+					});
+				}
 			}
 		}
 	}
