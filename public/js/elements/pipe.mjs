@@ -2,7 +2,7 @@ import { Note } from './notes.mjs';
 import { Group } from './groups.mjs';
 import { Card } from './cards.mjs';
 import { Matrix } from './matrixes.mjs';
-import { POST, DELETE, tree, checkContain, cartesianToPolar } from '../helpers/index.mjs';
+import { POST, DELETE, tree, checkContain, cartesianToPolar, computeAbsCoordinates } from '../helpers/index.mjs';
 import { broadcast } from '../websocket/index.mjs';
 
 function pipeStart (d) {
@@ -15,14 +15,15 @@ function pipeStart (d) {
 	const { clientX: sx, clientY: sy } = evt.sourceEvent;
 	const { x, y } = evt;
 
+	// const 
+	const [ ex, ey ] = computeAbsCoordinates(sel, d3.select('.canvas'));
+
 	// REMOVE FOCUS FROM ALL OBJECTS
 	if (!sel.classed('focus')) {
-		/*
 		Note.releaseAll(true);
 		Card.releaseAll(true);
 		Group.releaseAll(true);
 		Matrix.releaseAll(true);
-		*/
 	}
 
 	d3.select('div.canvas')
@@ -31,10 +32,10 @@ function pipeStart (d) {
 		id,
 		w: 1,
 		h: 1,
-		x: d.x - ow / 2,
-		y: d.y + oh / 2,
-		dx: 0, //(sx - ox) / k - x + ow / 2,
-		dy: 0, //Math.abs(y - (sy - oy) / k) - oh / 2,
+		x: ex + (ow / 2) / k,
+		y: ey + (oh / 2) / k,
+		dx: 0,
+		dy: 0,
 	}).styles({
 		'top': c => `${c.y}px`,
 		'left': c => `${c.x}px`,
