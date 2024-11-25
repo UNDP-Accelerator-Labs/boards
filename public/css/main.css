@@ -167,6 +167,15 @@ div.matrix table td > div.group {
 	height: 100%;
 	box-sizing: border-box;
 }
+div.add-row,
+div.add-col {
+	opacity: 0;
+}
+div.add-row:hover,
+div.add-col:hover {
+	opacity: 1;
+}
+
 div.add-col {
 	width: 4rem;
 }
@@ -186,6 +195,8 @@ div.add-row button {
 }*/
 div.group {
 	position: absolute;
+/*	border: 1px solid #000;*/
+/*	background-color: rgba(255, 255, 255, .75);*/
 	border: 1px solid rgba(51,51,51,.25);
 	background-color: rgba(225,225,225,.25);
 	padding: 0 0 2rem 2rem;
@@ -300,6 +311,11 @@ div.card.focus {
 }
 div.locked {
 	pointer-events: none !important;
+}
+div.locked div.note,
+div.locked div.card,
+div.locked div.group {
+	pointer-events: all;
 }
 div.locked::before {
 	content: attr(data-locked-by);

@@ -1,9 +1,10 @@
-import { Note, Group, Card } from '../elements/index.mjs';
+import { Note, Group, Card, Matrix } from '../elements/index.mjs';
 
 function zoomstart () {
 	Note.releaseAll(true);
-	Group.releaseAll(true);
 	Card.releaseAll(true);
+	Group.releaseAll(true);
+	Matrix.releaseAll(true);
 }
 function zooming () {
 	if (d3.select(this).classed('adding-text') || d3.select(this).classed('changing-text')) return

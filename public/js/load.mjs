@@ -56,7 +56,6 @@ async function onLoad () {
 			const content = { title, img, txt, source };
 			await Card.add({ datum: { content }, i, bcast: true });
 		}
-
 		addDatasource(sourceinfo);
 	})
 
@@ -66,7 +65,7 @@ async function onLoad () {
 	});
 	d3.select('button#addGroup')
 	.on('click', async _ => {
-		await Group.add({ focus: true, bcast: true });
+		await Group.add({ datum: { persistent: true }, focus: true, bcast: true });
 	});
 	d3.select('button#addMatrix')
 	.on('click', async _ => {
@@ -134,6 +133,9 @@ async function onLoad () {
 				if (focus.classed('note')) {
 					const { id } = focus.datum();
 					await Note.remove({ note: focus, id, bcast: true });
+				} else if (focus.classed('group')) {
+					const { id, persistent } = focus.datum();
+					if (persistent) await Group.remove({ group: focus, id, bcast: true }); 
 				} else if (focus.classed('matrix')) {
 					const { id } = focus.datum();
 					await Matrix.remove({ matrix: focus, id, bcast: true });
