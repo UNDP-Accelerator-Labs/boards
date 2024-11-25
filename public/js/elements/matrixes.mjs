@@ -24,7 +24,6 @@ export const Matrix = {
 		if (!cols) cols = new Array(2).fill('header');;
 		// CHECK IF THIS IS A NEW MATRIX
 		if (!id) datum = await POST('/addMatrix', { data: { label, x, y, tree: mtree, rows, cols }, project: wallId });
-		
 		// REMOVE FOCUS FROM ALL OBJECTS
 		// constructorRef.releaseAll(bcast);
 		Note.releaseAll(bcast);
@@ -37,6 +36,7 @@ export const Matrix = {
 			if (child) {
 				const parentNode = d3.selectAll('div.matrix').filter(d => d.tree === tree.moveUp(mtree) && d.id === +tree.getLeaf(mtree)).node();
 				if (parentNode) parent = d3.select(parentNode);
+				else parent = d3.select('div.canvas');
 			} else parent = d3.select('div.canvas');
 		}
 		// ADD A MATRIX
@@ -73,7 +73,6 @@ export const Matrix = {
 		// SAVE AND BROADCAST
 		if (bcast) {
 			await constructorRef.save(matrix.datum());
-			constructorRef.broadcast({ operation: 'add', data: matrix.datum() });
 		}
 		// THE SAVE AND BROADCAST NEEDS TO COME BEFORE HANDLING THE CHILDREN HERE
 		// BECAUSE OTHERWISE, THE CHILDREN GET UPDATED BEFORE THE MATRIXES IS CREATED
@@ -85,7 +84,8 @@ export const Matrix = {
 		for (let i = 0; i < mrows.length; i ++) {
 			const row = mrows[i];
 
-			const tr = table.addElems('tr', `row-${i}`)
+			const tr = table.addElems('tr', `row row-${i}`)
+				.each(d => d.rowId = i);
 			tr.addElems('th', 'sticky-area immutable row-header', [{ id: mid, label: row, cidx: i }])
 				.call(constructorRef.addLabel, { constructorRef, axis: 'rows' });
 
@@ -96,6 +96,7 @@ export const Matrix = {
 					&& tree.getLeaf(c.matrix_index) === j.toString();
 				});
 				let group;
+				console.log('cell', cell)
 				
 				if (cell) {
 					const td = tr.addElems('td', `cell-${j}`, [cell]);
@@ -103,20 +104,20 @@ export const Matrix = {
 						parent: td,
 						datum: cell,
 						immutable: true,
-						bcast, // THIS OPERATION MAY BE REDUNDANT
+						bcast: false, // THIS OPERATION MAY BE REDUNDANT
 					});
 				} else {
 					// CREATE A NEW CELL
 					const ctree = tree.build(mdtree, `m${mid}`);
 					const cidx = tree.build(i, j);
-					cell = { tree: ctree, matrix_index: cidx, x: null, y: null };
+					cell = { tree: ctree, matrix_index: cidx, x: null, y: null, persistent: true };
 
 					const td = tr.addElems('td', `cell-${j}`, [cell]);
 					group = await Group.add({ 
 						parent: td,
 						datum: cell,
 						immutable: true,
-						bcast, // THIS OPERATION MAY BE REDUNDANT
+						bcast: false, // THIS OPERATION MAY BE REDUNDANT
 					});
 
 					// ADD A MINIMUM OF TWO NOTES
@@ -124,6 +125,7 @@ export const Matrix = {
 					const ntree = tree.build(gtree, gid);
 					for (let n = 0; n < 2; n ++) {
 						await Note.add({ 
+							parent: group,
 							datum: { tree: ntree, x: null, y: null },
 							bcast: false, // HERE BROADCAST NEEDS TO BE FALSE TO AVOID DUPLICATE BROADCAST
 						});
@@ -145,12 +147,23 @@ export const Matrix = {
 			.addElems('button')
 		.on('click', function () {
 			constructorRef.addAxis({ matrix, axis: 'row' });
-		}).html('+')
+		}).html('+');
+
+		if (bcast) { 
+			// NEED TO SEPARATE OUT THE BROADCAST HERE IN ORDER TO HAVE note IDs TO BROADCAST
+			// OTHERWISE THE NOTES GET CREATED AS MANY TIMES AS THERE ARE USERS CONNECTED TO THE ROOM
+			constructorRef.broadcast({ operation: 'add', data: matrix.datum() });
+			// BROADCAST ALL NOTES
+			matrix.selectAll('div.note')
+			.each(function (d) {
+				Note.broadcast({ operation: 'add', data: d });
+			});
+		}
 
 		matrix.call(drag);
 		return matrix;
 	},
-	update: async function (_kwargs) { // TO DO: IMPROVE THIS
+	update: async function (_kwargs) {
 		const constructorRef = this;
 		let { matrix, datum, bcast, rows, ncols } = _kwargs;
 
@@ -191,7 +204,7 @@ export const Matrix = {
 			// SAVE AND BROADCAST
 			if (bcast) {
 				await constructorRef.save(matrix.datum());
-				constructorRef.broadcast({ operation: 'update', data: matrix.datum() });
+				// constructorRef.broadcast({ operation: 'update', data: matrix.datum() });
 			}
 		}
 		// THE SAVE AND BROADCAST NEEDS TO COME BEFORE HANDLING THE CHILDREN HERE
@@ -202,7 +215,10 @@ export const Matrix = {
 		for (let i = 0; i < mrows.length; i ++) {
 			const row = mrows[i];
 
-			const tr = table.addElems('tr', `row-${i}`)
+			const tr = table.addElems('tr', `row row-${i}`)
+				.each(function (d) {
+					d.rowId = i;
+				});
 			tr.addElems('th', 'sticky-area immutable row-header', [{ id: mid, label: row, cidx: i }])
 				.call(constructorRef.addLabel, { constructorRef, axis: 'rows' });
 
@@ -218,14 +234,14 @@ export const Matrix = {
 					// CREATE A NEW CELL
 					const ctree = tree.build(mtree, `m${mid}`);
 					const cidx = tree.build(i, j);
-					cell = { tree: ctree, matrix_index: cidx, x: null, y: null };
+					cell = { tree: ctree, matrix_index: cidx, x: null, y: null, persistent: true };
 
 					const td = tr.addElems('td', `cell-${j}`, [cell]);
 					const group = await Group.add({ 
 						parent: td,
 						datum: cell,
 						immutable: true,
-						bcast, // THIS OPERATION MAY BE REDUNDANT
+						bcast: false, // THIS OPERATION MAY BE REDUNDANT
 					});
 
 					// ADD A MINIMUM OF TWO NOTES
@@ -233,6 +249,7 @@ export const Matrix = {
 					const ntree = tree.build(gtree, gid);
 					for (let n = 0; n < 2; n ++) {
 						await Note.add({ 
+							parent: group,
 							datum: { tree: ntree, x: null, y: null },
 							bcast: false, // THIS OPERATION MAY BE REDUNDANT
 						});
@@ -249,6 +266,24 @@ export const Matrix = {
 					// TO DO: INVESTIGATE THIS
 					// LIKELY WHERE THE DISPATCH ISSUE IS COMING FROM
 				}
+			}
+		}
+
+		if (bcast) {
+			if (bcast) { 
+				// NEED TO SEPARATE OUT THE BROADCAST HERE IN ORDER TO HAVE note IDs TO BROADCAST
+				// OTHERWISE THE NOTES GET CREATED AS MANY TIMES AS THERE ARE USERS CONNECTED TO THE ROOM
+				constructorRef.broadcast({ operation: 'update', data: matrix.datum() });
+				// // BROADCAST ALL GROUPS
+				matrix.selectAll('div.group')
+				.each(function (d) {
+					Group.broadcast({ operation: 'update', data: d });
+				});
+				// BROADCAST ALL NOTES
+				matrix.selectAll('div.note')
+				.each(function (d) {
+					Note.broadcast({ operation: 'update', data: d });
+				});
 			}
 		}
 
@@ -320,6 +355,7 @@ export const Matrix = {
 		});
 	},
 	save: async function (data) {
+		console.trace()
 		if (wallId) await POST('/updateMatrix', { data, project: wallId });
 		else console.log('error: no project to save to');
 	},

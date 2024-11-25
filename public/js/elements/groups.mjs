@@ -27,10 +27,31 @@ export const Group = {
 		const child = tree.getDepth(gtree) > 1;
 		if (!parent) {
 			if (child) {
-				const parentNode = d3.selectAll('div.group, div.matrix').filter(d => d.tree === tree.moveUp(gtree) && d.id === +tree.getLeaf(gtree)).node();
+				const parentNode = d3.selectAll('div.group, div.matrix table tr.row')
+				.filter(function (d) {
+					const sel = d3.select(this);
+					if (sel.classed('group')) {
+						return d.tree === tree.moveUp(gtree) 
+						&& d.id === +tree.getLeaf(gtree);
+					} else {
+						// console.log(d.rowId, matrix_index, +tree.getRoot(matrix_index))
+						// console.log(d.tree === tree.moveUp(gtree) 
+						// && d.id === +tree.getLeaf(gtree).replace('m', '')
+						// && d.rowId === +tree.getRoot(matrix_index))
+						// console.log(d)
+						// console.log(this)
+						// console.log('\n')
+
+						return d.tree === tree.moveUp(gtree) 
+						&& d.id === +tree.getLeaf(gtree).replace('m', '')
+						&& d.rowId === +tree.getRoot(matrix_index)
+					}
+				}).node();
 				if (parentNode) parent = d3.select(parentNode);
+				else parent = d3.select('div.canvas');
 			} else parent = d3.select('div.canvas');
 		}
+		console.log(parent, bcast, id, gtree)
 		// ADD A GROUP
 		const group = parent
 		.addElem('div', 'group')
@@ -134,8 +155,14 @@ export const Group = {
 		let immutable = false;
 		if (!group) {
 			const { id } = datum;
-			group = d3.selectAll('div.group')
-				.filter(d => d.id === id);
+			if (id) {
+				group = d3.selectAll('div.group')
+					.filter(d => d.id === id);
+			}
+			// IF NO GROUP IS FOUND, CREATE THE GROUP 
+			if (!group.node()) { // THE GROUP DOES NOT YET EXIST
+				return constructorRef.add({ datum, bcast });
+			}
 		}
 		if (datum) {
 			group.each(d => {

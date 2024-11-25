@@ -28,70 +28,70 @@ export const connectToSocket = function () {
     if (object === "note") {
       if (operation === "add") {
         await Note.add({ datum: data, client });
-        console.log("added new simple note");
+        // console.log("added new simple note");
       } else if (operation === "update") {
         await Note.update({ datum: data, client });
-        console.log("updated simple note");
+        // console.log("updated simple note");
       } else if (operation === "delete") {
         await Note.remove({ id: data?.id, client });
-        console.log("removed note");
+        // console.log("removed note");
       } else if (operation === "lock") {
         await Note.lock({ id: data?.id, client });
-        console.log("locked note");
+        // console.log("locked note");
       } else if (operation === "release") {
         await Note.release({ id: data?.id, client });
-        console.log("locked note");
+        // console.log("locked note");
       }
     } else if (object === "group") {
       if (operation === "add") {
         await Group.add({ datum: data, client });
-        console.log("added new group");
+        // console.log("added new group");
       } else if (operation === "update") {
         await Group.update({ datum: data, client });
-        console.log("updated group");
+        // console.log("updated group");
       } else if (operation === "delete") {
         await Group.remove({ id: data?.id, client });
-        console.log("removed group");
+        // console.log("removed group");
       } else if (operation === "lock") {
         await Group.lock({ id: data?.id, client });
-        console.log("locked group");
+        // console.log("locked group");
       } else if (operation === "release") {
         await Group.release({ id: data?.id, client });
-        console.log("locked group");
+        // console.log("locked group");
       }
     } else if (object === "card") {
       if (operation === "add") {
         await Card.add({ datum: data, client });
-        console.log("added new card");
+        // console.log("added new card");
       } else if (operation === "update") {
         await Card.update({ datum: data, client });
-        console.log("updated card");
+        // console.log("updated card");
       } else if (operation === "delete") {
         await Card.remove({ id: data?.id, client });
-        console.log("removed card");
+        // console.log("removed card");
       } else if (operation === "lock") {
         await Card.lock({ id: data?.id, client });
-        console.log("locked card");
+        // console.log("locked card");
       } else if (operation === "release") {
         await Card.release({ id: data?.id, client });
-        console.log("locked card");
+        // console.log("locked card");
       }
     } else if (object === "matrix") {
       if (operation === "add") {
         await Matrix.add({ datum: data, client });
-        console.log("added new matrix");
+        // console.log("added new matrix");
       } else if (operation === "update") {
         await Matrix.update({ datum: data, client });
-        console.log("updated matrix");
+        // console.log("updated matrix");
       } else if (operation === "delete") {
         await Matrix.remove({ id: data?.id, client });
-        console.log("removed matrix");
+        // console.log("removed matrix");
       } else if (operation === "lock") {
         await Matrix.lock({ id: data?.id, client });
-        console.log("locked matrix");
+        // console.log("locked matrix");
       } else if (operation === "release") {
         await Matrix.release({ id: data?.id, client });
-        console.log("locked matrix");
+        // console.log("locked matrix");
       }
     }
   };

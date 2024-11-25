@@ -12,7 +12,7 @@ const colors = d3.scaleOrdinal(d3.schemePastel1)
 export const Note = {
 	add: async function (_kwargs) {
 		const constructorRef = this;
-		let { datum, focus, bcast, client } = _kwargs;
+		let { parent, datum, focus, bcast, client } = _kwargs;
 		if (!datum) datum = {}; // MAKE SURE THERE IS A datum OBJECT TO DESTRUCTURE BELOW
 		let { content, color, x, y, id, tree: ntree, pipe_from } = datum;
 		if (!content) content = '';
@@ -30,11 +30,14 @@ export const Note = {
 		Group.releaseAll(bcast);
 		Matrix.releaseAll(bcast);
 		// CHECK IF THIS IS TO BE A CHILD GROUP
-		let parent = d3.select('div.canvas');
 		const child = tree.getDepth(ntree) > 1;
-		if (child) {
-			const parentNode = d3.selectAll('div.group').filter(d => d.tree === tree.moveUp(ntree) && d.id === +tree.getLeaf(ntree)).node();
-			if (parentNode) parent = d3.select(parentNode);
+		console.log(parent, bcast, id)
+		if (!parent) {
+			if (child) {
+				const parentNode = d3.selectAll('div.group').filter(d => d.tree === tree.moveUp(ntree) && d.id === +tree.getLeaf(ntree)).node();
+				if (parentNode) parent = d3.select(parentNode);
+				else parent = d3.select('div.canvas');
+			} else parent = d3.select('div.canvas');
 		}
 		// ADD A NOTE
 		const note = parent
