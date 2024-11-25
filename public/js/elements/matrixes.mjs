@@ -125,7 +125,7 @@ export const Matrix = {
 					for (let n = 0; n < 2; n ++) {
 						await Note.add({ 
 							datum: { tree: ntree, x: null, y: null },
-							bcast, // THIS OPERATION MAY BE REDUNDANT
+							bcast: false, // HERE BROADCAST NEEDS TO BE FALSE TO AVOID DUPLICATE BROADCAST
 						});
 					}
 				}
@@ -183,6 +183,21 @@ export const Matrix = {
 			return headers;
 		}).call(constructorRef.addLabel, { constructorRef, axis: 'cols' });
 
+		// SAVE AND BROADCAST
+		let rmMatrix = false;
+		if (rmMatrix) {
+			return await constructorRef.remove({ matrix, gid, bcast });
+		} else {
+			// SAVE AND BROADCAST
+			if (bcast) {
+				await constructorRef.save(matrix.datum());
+				constructorRef.broadcast({ operation: 'update', data: matrix.datum() });
+			}
+		}
+		// THE SAVE AND BROADCAST NEEDS TO COME BEFORE HANDLING THE CHILDREN HERE
+		// BECAUSE OTHERWISE, THE CHILDREN GET UPDATED BEFORE THE MATRIXES IS CREATED
+		// IN THE DISPATCHED INSTANCES
+
 		// UPDATE THE CONTENT OF THE MATRIX
 		for (let i = 0; i < mrows.length; i ++) {
 			const row = mrows[i];
@@ -219,7 +234,7 @@ export const Matrix = {
 					for (let n = 0; n < 2; n ++) {
 						await Note.add({ 
 							datum: { tree: ntree, x: null, y: null },
-							bcast, // THIS OPERATION MAY BE REDUNDANT
+							bcast: false, // THIS OPERATION MAY BE REDUNDANT
 						});
 					}
 
@@ -237,18 +252,7 @@ export const Matrix = {
 			}
 		}
 
-		// SAVE AND BROADCAST
-		let rmMatrix = false;
-		if (rmMatrix) {
-			return await constructorRef.remove({ matrix, gid, bcast });
-		} else {
-			// SAVE AND BROADCAST
-			if (bcast) {
-				await constructorRef.save(matrix.datum());
-				constructorRef.broadcast({ operation: 'update', data: matrix.datum() });
-			}
-			return matrix;
-		}
+		return matrix;
 	},
 	remove: async function (_kwargs) {
 		const constructorRef = this;
