@@ -84,8 +84,7 @@ export const Matrix = {
 		for (let i = 0; i < mrows.length; i ++) {
 			const row = mrows[i];
 
-			const tr = table.addElems('tr', `row row-${i}`)
-				.each(d => d.rowId = i);
+			const tr = table.addElems('tr', `row row-${i}`, d => { return [{ ...d, rowId: i }] });
 			tr.addElems('th', 'sticky-area immutable row-header', [{ id: mid, label: row, cidx: i }])
 				.call(constructorRef.addLabel, { constructorRef, axis: 'rows' });
 
@@ -212,13 +211,12 @@ export const Matrix = {
 		// IN THE DISPATCHED INSTANCES
 
 		// UPDATE THE CONTENT OF THE MATRIX
+		console.log(mcells)
+
 		for (let i = 0; i < mrows.length; i ++) {
 			const row = mrows[i];
 
-			const tr = table.addElems('tr', `row row-${i}`)
-				.each(function (d) {
-					d.rowId = i;
-				});
+			const tr = table.addElems('tr', `row row-${i}`, d => { return [{ ...d, rowId: i }] });
 			tr.addElems('th', 'sticky-area immutable row-header', [{ id: mid, label: row, cidx: i }])
 				.call(constructorRef.addLabel, { constructorRef, axis: 'rows' });
 
@@ -228,7 +226,11 @@ export const Matrix = {
 					return tree.getRoot(c.matrix_index) === i.toString() 
 					&& tree.getLeaf(c.matrix_index) === j.toString();
 				});
-				
+
+				// IT IS VERY IMPORTANT TO SET THE td OUTSIDE THE CONDITION
+				// TO BE ABLE TO FIND IT FOR DISPATCHED GROUPS
+				const td = tr.addElems('td', `cell-${j}`, [cell || {}]);
+
 				if (!cell) { // ONLY ADD CELLS THAT DO NOT EXIST // IF A CELL ALREADY EXISTS, DO NOTHING
 					// ALL TRANSFORMATIONS SHOULD BE HANDLED BY THE Group IN THE CELL
 					// CREATE A NEW CELL
@@ -236,12 +238,12 @@ export const Matrix = {
 					const cidx = tree.build(i, j);
 					cell = { tree: ctree, matrix_index: cidx, x: null, y: null, persistent: true };
 
-					const td = tr.addElems('td', `cell-${j}`, [cell]);
+					td.datum(cell);
 					const group = await Group.add({ 
 						parent: td,
 						datum: cell,
 						immutable: true,
-						bcast: false, // THIS OPERATION MAY BE REDUNDANT
+						bcast: false,
 					});
 
 					// ADD A MINIMUM OF TWO NOTES
@@ -251,7 +253,7 @@ export const Matrix = {
 						await Note.add({ 
 							parent: group,
 							datum: { tree: ntree, x: null, y: null },
-							bcast: false, // THIS OPERATION MAY BE REDUNDANT
+							bcast: false,
 						});
 					}
 
@@ -263,30 +265,30 @@ export const Matrix = {
 						if (!d.cells) d.cells = [];
 						d.cells.push(group.datum());
 					});
-					// TO DO: INVESTIGATE THIS
-					// LIKELY WHERE THE DISPATCH ISSUE IS COMING FROM
 				}
 			}
 		}
 
 		if (bcast) {
-			if (bcast) { 
-				// NEED TO SEPARATE OUT THE BROADCAST HERE IN ORDER TO HAVE note IDs TO BROADCAST
-				// OTHERWISE THE NOTES GET CREATED AS MANY TIMES AS THERE ARE USERS CONNECTED TO THE ROOM
-				constructorRef.broadcast({ operation: 'update', data: matrix.datum() });
-				// // BROADCAST ALL GROUPS
-				matrix.selectAll('div.group')
-				.each(function (d) {
-					Group.broadcast({ operation: 'update', data: d });
-				});
-				// BROADCAST ALL NOTES
-				matrix.selectAll('div.note')
-				.each(function (d) {
-					Note.broadcast({ operation: 'update', data: d });
-				});
-			}
+			// NEED TO SEPARATE OUT THE BROADCAST HERE IN ORDER TO HAVE note IDs TO BROADCAST
+			// OTHERWISE THE NOTES GET CREATED AS MANY TIMES AS THERE ARE USERS CONNECTED TO THE ROOM
+			constructorRef.broadcast({ operation: 'update', data: matrix.datum() });
+			// BROADCAST ALL GROUPS
+			matrix.selectAll('div.group')
+			.each(function (d) {
+				Group.broadcast({ operation: 'update', data: d });
+			});
+			// BROADCAST ALL NOTES
+			matrix.selectAll('div.note')
+			.each(function (d) {
+				Note.broadcast({ operation: 'update', data: d });
+			});
+			constructorRef.release({
+				matrix,
+				id: mid,
+				bcast: true,
+			})	
 		}
-
 		return matrix;
 	},
 	remove: async function (_kwargs) {

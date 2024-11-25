@@ -27,31 +27,21 @@ export const Group = {
 		const child = tree.getDepth(gtree) > 1;
 		if (!parent) {
 			if (child) {
-				const parentNode = d3.selectAll('div.group, div.matrix table tr.row')
+				const parentNode = d3.selectAll('div.group, div.matrix table tr.row td')
 				.filter(function (d) {
 					const sel = d3.select(this);
 					if (sel.classed('group')) {
 						return d.tree === tree.moveUp(gtree) 
 						&& d.id === +tree.getLeaf(gtree);
 					} else {
-						// console.log(d.rowId, matrix_index, +tree.getRoot(matrix_index))
-						// console.log(d.tree === tree.moveUp(gtree) 
-						// && d.id === +tree.getLeaf(gtree).replace('m', '')
-						// && d.rowId === +tree.getRoot(matrix_index))
-						// console.log(d)
-						// console.log(this)
-						// console.log('\n')
-
-						return d.tree === tree.moveUp(gtree) 
-						&& d.id === +tree.getLeaf(gtree).replace('m', '')
-						&& d.rowId === +tree.getRoot(matrix_index)
+						return d.tree === gtree
+						&& d.matrix_index === matrix_index;
 					}
 				}).node();
 				if (parentNode) parent = d3.select(parentNode);
 				else parent = d3.select('div.canvas');
 			} else parent = d3.select('div.canvas');
 		}
-		console.log(parent, bcast, id, gtree)
 		// ADD A GROUP
 		const group = parent
 		.addElem('div', 'group')

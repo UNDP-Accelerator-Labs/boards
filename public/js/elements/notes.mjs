@@ -31,7 +31,6 @@ export const Note = {
 		Matrix.releaseAll(bcast);
 		// CHECK IF THIS IS TO BE A CHILD GROUP
 		const child = tree.getDepth(ntree) > 1;
-		console.log(parent, bcast, id)
 		if (!parent) {
 			if (child) {
 				const parentNode = d3.selectAll('div.group').filter(d => d.tree === tree.moveUp(ntree) && d.id === +tree.getLeaf(ntree)).node();
