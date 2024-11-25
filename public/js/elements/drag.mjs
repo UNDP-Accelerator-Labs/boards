@@ -107,16 +107,17 @@ function dragging (d) {
 	});
 }
 async function dragEnd (d) {
+	const sel = d3.select(this)
+	.classed('dragging', false);
+
 	if (computeDistance([0, 0], [d.dx, d.dy]) <= 10) {
 		// Note.releaseAll(true);
 		Card.releaseAll(true);
-		Group.releaseAll(true);
+		// if (!(sel.classed('group') && d.persistent)) Group.releaseAll(true);
 		// Matrix.releaseAll(true);
 		return console.log('has not moved');
 	}
 
-	const sel = d3.select(this)
-		.classed('dragging', false);
 	// REACTIVATE ALL textareas AND inputs
 	d3.select('div.canvas').selectAll('textarea, input')
 	.classed('deactivate', false);
@@ -140,7 +141,7 @@ async function dragEnd (d) {
 			const { id: gid, tree: gtree, pipe_to } = hit.datum();
 			d.tree = tree.build(gtree, gid);
 			if (Array.isArray(pipe_to) && pipe_to?.length) pipes = [ ...pipes, ...pipe_to ];
-			
+
 		} else if (hit.classed('note') || hit.classed('card')) {
 			// IF THE HIT IS A NOTE OR CARD, CREATE A GROUP
 			const { x, y, tree: ntree, piped_from } = hit.datum();
@@ -203,7 +204,7 @@ async function dragEnd (d) {
 			datum: d,
 			bcast: true,
 		});
-		Group.release({ group: sel, id: d.id, bcast: true });
+		// Group.release({ group: sel, id: d.id, bcast: true });
 	} else if (sel.classed('matrix')) {
 		await Matrix.update({ 
 			matrix: sel, 

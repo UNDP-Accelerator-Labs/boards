@@ -11,13 +11,13 @@ export const Group = {
 		const constructorRef = this;
 		let { parent, datum, children, focus, bcast, client, immutable } = _kwargs;
 		if (!datum) datum = {};
-		let { id, label, x, y, tree: gtree, matrix_index } = datum;
+		let { id, label, x, y, tree: gtree, matrix_index, persistent } = datum;
 		if (!label) label = '';
 		if (x === undefined) x = 0;
 		if (y === undefined) y = 0;
 		if (matrix_index) immutable = true;
 		// CHECK IF THIS IS A NEW GROUP
-		if (!id) datum = await POST('/addGroup', { data: { label, x, y, tree: gtree, matrix_index }, project: wallId });
+		if (!id) datum = await POST('/addGroup', { data: { label, x, y, tree: gtree, matrix_index, persistent }, project: wallId });
 		// REMOVE FOCUS FROM ALL OBJECTS
 		constructorRef.releaseAll(bcast);
 		Note.releaseAll(bcast);
@@ -144,7 +144,7 @@ export const Group = {
 				}
 			});
 		};
-		const { tree: gtree, id: gid, matrix_index } = group.datum();
+		const { tree: gtree, id: gid, matrix_index, persistent } = group.datum();
 		if (matrix_index) immutable = true;
 
 		const child = tree.getDepth(gtree) > 1;
@@ -169,7 +169,7 @@ export const Group = {
 			.filter(function () {
 				return this.parentNode === group.node();
 			});
-		const rmGroup = children.size() <= 1 && !immutable;
+		const rmGroup = children.size() <= 1 && !immutable && !persistent;
 
 		const childNodes = children.nodes();
 		for (let i = 0; i < childNodes.length; i ++) {
