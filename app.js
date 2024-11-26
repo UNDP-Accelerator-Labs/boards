@@ -159,7 +159,7 @@ const interval = setInterval(function ping () {
 		ws.isAlive = false;
 		ws.ping();
 	});
-}, 30000);
+}, 10 * 60 * 1000); // 10 MINUTES
 
 wss.on('close', function close () {
 	clearInterval(interval);

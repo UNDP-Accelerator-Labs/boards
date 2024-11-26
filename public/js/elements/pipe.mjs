@@ -138,7 +138,7 @@ async function pipeEnd (d) {
 		// UPDATE GROUP TO PIPE FROM
 		const [ datum ] = d3.selectAll('div.group')
 			.filter(d => d.id === from).data();
-		const { pipe_to } = datum || {};
+		let { pipe_to } = datum || {};
 		if (Array.isArray(pipe_to)) pipe_to.push(to);
 		else pipe_to = [to];
 		// UPDATE THE PIPE GROUP
