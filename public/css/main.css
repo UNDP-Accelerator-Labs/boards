@@ -169,7 +169,8 @@ div.matrix table td > div.group {
 }
 div.add-row,
 div.add-col {
-	opacity: 0;
+	opacity: 1;
+	position: absolute;
 }
 div.add-row:hover,
 div.add-col:hover {
@@ -178,9 +179,13 @@ div.add-col:hover {
 
 div.add-col {
 	width: 4rem;
+	left: 100%;
+	height: 100%;
 }
 div.add-row {
 	height: 4rem;
+	top: 100%;
+	width: 100%;
 }
 div.add-col button,
 div.add-row button {
