@@ -69,6 +69,12 @@ CREATE TABLE pipes (
 	"from" INT REFERENCES groups (id) ON UPDATE CASCADE ON DELETE CASCADE,
 	"to" INT UNIQUE REFERENCES groups (id) ON UPDATE CASCADE ON DELETE CASCADE
 );
+ALTER TABLE pipes DROP CONSTRAINT pipes_to_key;
+ALTER TABLE pipes ADD COLUMN sm_pipe_id INT GENERATED ALWAYS AS
+	(CASE WHEN "from" < "to" THEN "from" ELSE "to" END) STORED;
+ALTER TABLE pipes ADD COLUMN lg_pipe_id INT GENERATED ALWAYS AS
+	(CASE WHEN "from" > "to" THEN "from" ELSE "to" END) STORED;
+ALTER TABLE pipes ADD CONSTRAINT unique_flow UNIQUE (sm_pipe_id, lg_pipe_id);
 
 
 CREATE TABLE session (

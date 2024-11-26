@@ -5,9 +5,10 @@ exports.add = (req, res) => {
 	DB.conn.oneOrNone(`
 		INSERT INTO pipes ("from", "to")
 		VALUES ($1::INT, $2::INT)
-			ON CONFLICT ("to")
-			DO UPDATE
-				SET "from" = EXCLUDED."from"
+			ON CONFLICT ON CONSTRAINT unique_flow
+			DO NOTHING
+			-- DO UPDATE
+			--	SET "from" = EXCLUDED."from"
 		RETURNING *
 	;`, [from, to])
 	.then(data => res.status(200).json(data))
