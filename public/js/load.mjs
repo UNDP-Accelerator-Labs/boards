@@ -4,6 +4,8 @@ import { GET, POST, DELETE, wallId, uuid, tree, computeCoordinates } from './hel
 import { connectToSocket, broadcast } from './websocket/index.mjs';
 import { loadData, addDatasource } from './data/index.mjs';
 
+let directLogin = true;
+
 async function onLoad () {
 	const canvas = d3.select('div.canvas')
 		.datum({ x: 0, y: 0, k: 1 });
@@ -93,8 +95,8 @@ async function onLoad () {
 		const checkstatus = await DELETE(`/logout?project=${wallId}`);
 		console.log(checkstatus);
 	})
-	d3.select('button.connect-to-scocket')
-	.on('click', async _ => {
+	
+	if (directLogin) {
 		const { result, uuid } = await POST('/login');
 		if (result !== 'OK') alert('login failed');
 		else {
@@ -102,8 +104,18 @@ async function onLoad () {
 			console.log('connected to socket');
 			d3.select('.connection.overlay').remove();
 		}
-	})
-
+	} else {
+		d3.select('button.connect-to-scocket')
+		.on('click', async _ => {
+			const { result, uuid } = await POST('/login');
+			if (result !== 'OK') alert('login failed');
+			else {
+				connectToSocket();
+				console.log('connected to socket');
+				d3.select('.connection.overlay').remove();
+			}
+		})
+	}
 
 	d3.select('div.container')
 	.on('click', async function () {
