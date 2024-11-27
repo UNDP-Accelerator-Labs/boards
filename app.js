@@ -78,9 +78,10 @@ app.delete('/removeMatrix', routes.matrixes.remove);
 app.post('/addPipe', routes.pipes.add);
 app.delete('/removePipe', routes.pipes.remove);
 
-app.post('/addTitle', routes.addTitle);
-app.post('/updateTitle', routes.updateTitle);
-app.post('/removeTitle', routes.removeTitle);
+app.get('/getTexts', routes.texts.get);
+app.post('/addText', routes.texts.add);
+app.post('/updateText', routes.texts.update);
+app.delete('/removeText', routes.texts.remove);
 
 // TEMP LOGIN MECHANISM
 const { login, logout } = require('./routes/login.js');

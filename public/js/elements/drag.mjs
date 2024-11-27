@@ -1,3 +1,4 @@
+import { Text } from './texts.mjs';
 import { Note } from './notes.mjs';
 import { Group } from './groups.mjs';
 import { Card } from './cards.mjs';
@@ -14,13 +15,15 @@ function dragStart (d) {
 
 	// REMOVE FOCUS FROM ALL OBJECTS
 	if (!sel.classed('focus')) {
+		Text.releaseAll(true);
 		Note.releaseAll(true);
 		Card.releaseAll(true);
 		Group.releaseAll(true);
 		Matrix.releaseAll(true);
 	}
 	
-	if (sel.classed('note') || sel.classed('card') || sel.classed('group') || sel.classed('matrix')) {
+	if (sel.classed('text') || sel.classed('note') || sel.classed('card') || sel.classed('group') || sel.classed('matrix')) {
+		if (sel.classed('text')) Text.lock({ text: sel, id, bcast: true });
 		if (sel.classed('note')) Note.lock({ note: sel, id, bcast: true });
 		if (sel.classed('card')) Card.lock({ card: sel, id, bcast: true });
 		if (sel.classed('group')) Group.lock({ group: sel, id, bcast: true });
@@ -47,7 +50,8 @@ function dragStart (d) {
 	}
 
 	let object;
-	if (sel.classed('note')) object = 'note';
+	if (sel.classed('text')) object = 'text';
+	else if (sel.classed('note')) object = 'note';
 	else if (sel.classed('card')) object = 'card';
 	else if (sel.classed('group')) object = 'group';
 	else if (sel.classed('matrix')) object = 'matrix';
@@ -96,7 +100,8 @@ function dragging (d) {
 	
 	// BROADCAST THE DRAG
 	let object;
-	if (sel.classed('note')) object = 'note';
+	if (sel.classed('text')) object = 'text';
+	else if (sel.classed('note')) object = 'note';
 	else if (sel.classed('card')) object = 'card';
 	else if (sel.classed('group')) object = 'group';
 	else if (sel.classed('matrix')) object = 'matrix';
@@ -142,7 +147,7 @@ async function dragEnd (d) {
 			d.tree = tree.build(gtree, gid);
 			if (Array.isArray(pipe_to) && pipe_to?.length) pipes = [ ...pipes, ...pipe_to ];
 
-		} else if (hit.classed('note') || hit.classed('card')) {
+		} else if (hit.classed('text') || hit.classed('note') || hit.classed('card')) {
 			// IF THE HIT IS A NOTE OR CARD, CREATE A GROUP
 			const { x, y, tree: ntree, piped_from } = hit.datum();
 
@@ -185,7 +190,14 @@ async function dragEnd (d) {
 		d.tree = tree.getRoot(d.tree);
 	}
 
-	if (sel.classed('note')) {
+	if (sel.classed('text')) {
+		await Text.update({ 
+			text: sel, 
+			datum: { ...d, ...{ pipe_from: null } },
+			bcast: true,
+			group_pipes: pipes,
+		});
+	} else if (sel.classed('note')) {
 		await Note.update({ 
 			note: sel, 
 			datum: { ...d, ...{ pipe_from: null } },

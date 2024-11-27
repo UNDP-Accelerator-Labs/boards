@@ -47,13 +47,15 @@ CREATE TABLE cards (
 	source TEXT
 );
 
-CREATE TABLE titles (
+CREATE TABLE texts (
 	id SERIAL PRIMARY KEY UNIQUE NOT NULL,
 	content TEXT,
+	variables JSONB,
 	x DOUBLE PRECISION,
 	y DOUBLE PRECISION,
 	project INT REFERENCES projects (id) ON UPDATE CASCADE ON DELETE CASCADE,
-	tree ltree DEFAULT text2ltree('0')
+	tree ltree DEFAULT text2ltree('0'),
+	pipe_from INT REFERENCES notes (id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE datasources (

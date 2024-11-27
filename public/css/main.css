@@ -254,6 +254,31 @@ div.pipeline {
 	transform-origin: top left;
 	z-index: 1000;
 }
+div.text {
+	border: 1px solid #000;
+	font-family: Comic Sans MS;
+	display: flex;
+	flex-direction: row;
+	position: absolute;
+	min-width: 400px;
+	min-height: 50px;
+/*	padding-top: 2rem;*/
+	border: 1px solid rgba(51,51,51,.5);
+	z-index: 100;
+	transform-origin: top center;
+	margin: 0 2rem 1rem 0;
+}
+div.text div.sticky-area.vertical {
+	height: 100%;
+	min-height: 100%;
+	max-height: 100%;
+	min-width: 30px;
+	width: 30px;
+	max-width: 120px;
+	background-color: rgba(51,51,51,.05);
+	cursor: grab;
+}
+
 div.note {
 	background-color: yellow;
 	font-family: Comic Sans MS;
@@ -398,6 +423,7 @@ textarea {
 	outline: none;
 	border: none;
 	width: 100%;
+	min-width: 100%;
 /*	margin: 1rem 0 0 1rem;*/
 	min-height: 200px;
 	background-color: transparent;

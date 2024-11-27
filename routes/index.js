@@ -1,5 +1,6 @@
 const DB = require('../config.js');
 
+exports.texts = require('./texts.js');
 exports.notes = require('./notes.js');
 exports.cards = require('./cards.js');
 exports.groups = require('./groups.js');

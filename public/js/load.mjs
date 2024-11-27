@@ -1,5 +1,5 @@
 import { zoom } from './canvas/index.mjs';
-import { Note, Group, Card, Matrix } from './elements/index.mjs';
+import { Text, Note, Group, Card, Matrix } from './elements/index.mjs';
 import { GET, POST, DELETE, wallId, uuid, tree, computeCoordinates } from './helpers/index.mjs';
 import { connectToSocket, broadcast } from './websocket/index.mjs';
 import { loadData, addDatasource } from './data/index.mjs';
@@ -33,6 +33,11 @@ async function onLoad () {
 		const datum = cards[i];
 		await Card.add({ datum });
 	}
+	const texts = await GET(`/getTexts?wallId=${wallId}`);
+	for (let i = 0; i < texts.length; i ++) {
+		const datum = texts[i];
+		await Text.add({ datum });
+	}
 	const datasources = await GET(`/getDatasources?wallId=${wallId}`);
 	addDatasource(datasources);
 
@@ -59,6 +64,10 @@ async function onLoad () {
 		addDatasource(sourceinfo);
 	})
 
+	d3.select('button#addText')
+	.on('click', async _ => {
+		await Text.add({ focus: true, bcast: true });
+	});
 	d3.select('button#addNote')
 	.on('click', async _ => {
 		await Note.add({ focus: true, bcast: true });
@@ -130,7 +139,10 @@ async function onLoad () {
 		if (evt.key === 'Backspace' || evt.keyCode === 8) {
 			const focus = d3.select('div.focus');
 			if (focus.node()) {
-				if (focus.classed('note')) {
+				if (focus.classed('text')) {
+					const { id } = focus.datum();
+					await Text.remove({ text: focus, id, bcast: true });
+				} else if (focus.classed('note')) {
 					const { id } = focus.datum();
 					await Note.remove({ note: focus, id, bcast: true });
 				} else if (focus.classed('group')) {
