@@ -43,6 +43,7 @@ app.set('view engine', 'ejs');
 const routes = require('./routes');
 
 app.get('/', routes.home);
+app.post('/changeTitle', routes.changeTitle);
 
 app.get('/wall/:id', routes.wall);
 app.get('/all', routes.multiwall);

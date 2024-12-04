@@ -18,15 +18,28 @@ function zooming () {
 	.select('div.origin')
 		.style('transform', d => `scale(${1 / d.k})`);
 
-	d3.selectAll('div.sticky-area:not(.immutable)')
-		.style('height', `${Math.min(75, 30 * 1 / t.k / 2)}px`);
+	d3.selectAll('div.matrix div.add-col')
+		.style('width', `${Math.max(75, 30 * 1 / t.k / 2)}px`)
+	.select('button')
+		.style('font-size', `${Math.max(75, 30 * 1 / t.k / 2)}px`);
+	d3.selectAll('div.matrix div.add-row')
+		.style('height', `${Math.max(75, 30 * 1 / t.k / 2)}px`)
+	.select('button')
+		.style('font-size', `${Math.max(75, 30 * 1 / t.k / 2)}px`);
+
+	// d3.selectAll('div.sticky-area:not(.immutable)')
+	// 	.style('height', `${Math.min(75, 30 * 1 / t.k / 2)}px`);
+
 	d3.selectAll('button.pipe')
 		.styles({
 			'width': `${Math.min(75, 30 * 1 / t.k / 2)}px`,
 			'height': `${Math.min(75, 30 * 1 / t.k / 2)}px`,
 		});
-	d3.selectAll('div.note, div.card, div.group, div.matrix')
-		.style('border-width', `${1 / t.k / 2}px`);
+	
+	// d3.selectAll('div.note:not(.focus), div.card:not(.focus), div.group:not(.focus), div.matrix:not(.focus)')
+	// 	.style('border-width', `${1 / t.k}px`);
+	// d3.selectAll('div.note.focus, div.card.focus, div.group.focus, div.matrix.focus')
+	// 	.style('border-width', `${3 / t.k}px`);
 }
 
 export const zoom = d3.zoom()
