@@ -61,6 +61,12 @@ async function onLoad () {
 		addDatasource(sourceinfo);
 	})
 
+	d3.select('input[type=text]#board-title')
+	.on('blur', async function () {
+		const title = this.value;
+		await POST('/changeTitle', { title, project: wallId });
+	})
+
 	d3.select('button#addNote')
 	.on('click', async _ => {
 		await Note.add({ focus: true, bcast: true });

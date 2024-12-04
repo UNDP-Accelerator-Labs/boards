@@ -41,6 +41,11 @@ div.sidebar div.toggle div.l3 {
 	transform-origin: center;
 	transition-delay: 0.1s;
 }
+input[type=text]#board-title {
+	font-size: 2em;
+	margin-bottom: 1em;
+	width: calc(100% - 20px);
+}
 
 div.sidebar.open div.toggle div.l1 {
 	width: 25px;

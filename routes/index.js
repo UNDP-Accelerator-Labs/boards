@@ -10,27 +10,28 @@ exports.pipes = require('./pipes.js');
 exports.home = (req, res) => {
 	DB.conn.tx(t => {
 		const batch = []
-		batch.push(t.any(`SELECT * FROM notes;`))
-		batch.push(t.any(`SELECT * FROM titles;`))
+		batch.push(t.any(`SELECT * FROM projects ORDER BY id;`))
 		return t.batch(batch)
 	}).then(data => {
-		res.render('home', { title: 'post it', notes: JSON.stringify(data[0]), titles: JSON.stringify(data[1]) })
+		const [ projects ] = data;
+		res.render('home', { title: 'AccLabs Boards', projects })
 	}).catch(err => console.log(err))
 }
 exports.wall = (req, res) => {
 	const { id: wallId } = req.params;
 
 	DB.conn.tx(t => {
-		return t.oneOrNone(`SELECT (1) FROM projects WHERE id = $1;`, [wallId])
+		return t.oneOrNone(`SELECT title FROM projects WHERE id = $1;`, [wallId])
 		.then(result => {
 			if (!result) {
-				return t.none(`INSERT INTO projects DEFAULT VALUES;`);
+				return t.one(`INSERT INTO projects DEFAULT VALUES RETURNING title;`);
 			} else return result;
 		}).catch(err => console.log(err));
 	}).then(data => {
+		const { title } = data;
 		res.render('wall', { 
-			title: 'post it',
-			wall: wallId,
+			title,
+			wallId: wallId,
 		});
 	}).catch(err => console.log(err))
 }
@@ -46,7 +47,17 @@ exports.multiwall = (req, res) => {
 	})
 	.catch(err => console.log(err))
 }
+exports.changeTitle = (req, res) => {
+	const { title, project: wallId } = req.body;
 
+	DB.conn.none(`
+		UPDATE projects
+		SET title = $1
+		WHERE id = $2::INT
+	`, [ title, wallId ])
+	.then(_ => res.status(200).json({ message: 'saved title' }))
+	.catch(err => console.log(err));
+}
 
 
 exports.addTitle = (req, res) => {

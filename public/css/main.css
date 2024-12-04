@@ -138,6 +138,8 @@ div.matrix {
 	padding: 0;
 	margin: 0 2rem 2rem 0;
 	z-index: 50;
+	box-sizing: border-box;
+	border: 1px solid #000;
 }
 div.matrix > div.sticky-area {
 	grid-column: span 2;
@@ -148,8 +150,17 @@ div.matrix table {
 	border-collapse: collapse;
 	height: 1px;
 }
+div.matrix table tr {
+	border-bottom: 1px solid #000;
+}
+div.matrix table tr th,
+div.matrix table tr td {
+	border-right: 1px solid #000;
+}
 div.matrix table th {
-	border: 1px solid rgba(51,51,51,.25);
+	border: 1px solid rgba(0,0,0,1);
+	box-sizing: border-box;
+	color: #FFF;
 }
 div.matrix table th.sticky-area {
 	height: 100%;
@@ -159,21 +170,26 @@ div.matrix table th.sticky-area {
 	padding: 1rem;
 	text-align: center;
 	box-sizing: border-box;
-	background-color: rgba(51,51,51,.05);
+	background-color: rgba(255,255,255,.75);
 	cursor: grab;
 }
 div.matrix table td > div.group {
 	margin: 0;
 	height: 100%;
-	box-sizing: border-box;
+	background-color: rgba(255,255,255,.75);
+	border: none;
 }
 div.add-row,
 div.add-col {
-	opacity: 1;
 	position: absolute;
 }
-div.add-row:hover,
-div.add-col:hover {
+div.add-row button,
+div.add-col button {
+	opacity: 0;
+	border: none;
+}
+div.add-row:hover button,
+div.add-col:hover button {
 	opacity: 1;
 }
 
@@ -210,6 +226,7 @@ div.group {
 	resize: both;
 	max-width: 2000px;
 	resize: both;
+	box-sizing: border-box;
 }
 div.group.immutable {
 	padding-top: 2rem;
@@ -266,6 +283,8 @@ div.note {
 	z-index: 100;
 	transform-origin: top center;
 	margin: 0 2rem 1rem 0;
+	box-shadow: 0 10px 10px rgba(51,51,51,.25);
+	box-sizing: border-box;
 }
 div.card {
 	background-color: #FFF;
@@ -312,7 +331,7 @@ div.group.focus {
 }
 div.note.focus,
 div.card.focus {
-	border: 1px solid rgba(51,51,51,.1);	
+	border: 3px solid rgba(51,51,51,.1);	
 }
 div.locked {
 	pointer-events: none !important;

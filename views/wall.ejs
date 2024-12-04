@@ -63,9 +63,9 @@ function title (content = '', x = null, y = null, id = null) {
 		d.content = this.value.trim()
 		if (!d.content.length) {
 			d3.select(this.parentNode).remove()
-			await POST('/removeTitle', { data: d, project: <%= wall %> }) 
+			await POST('/removeTitle', { data: d, project: <%= wallId %> }) 
 		}
-		else await POST('/updateTitle', { data: d, project: <%= wall %> }) 
+		else await POST('/updateTitle', { data: d, project: <%= wallId %> }) 
 		d3.select('div.container').classed('changing-text', false)
 	})
 	.on('keydown', function () {
