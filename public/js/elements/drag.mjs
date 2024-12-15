@@ -180,6 +180,7 @@ async function dragEnd (d) {
 		hit.classed('hit', false);
 	} else { // THE OBJECT IS MOVED OUT OF ALL GROUPS
 		const [ x, y ] = computeAbsCoordinates(sel, d3.select('.canvas'));
+		console.log(d.dx, d.dy, x, y)
 		d.x = x;
 		d.y = y;
 		d.tree = tree.getRoot(d.tree);
