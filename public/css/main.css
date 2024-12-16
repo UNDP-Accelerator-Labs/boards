@@ -329,11 +329,11 @@ div.matrix.focus {
 	border: 1px solid rgba(51,51,51,1);
 }
 div.group.focus {
-	border: 1px solid rgba(51,51,51,.25);
+	border: 1px solid rgba(51,51,51,1);
 }
 div.note.focus,
 div.card.focus {
-	border: 3px solid rgba(51,51,51,.1);	
+	border: 1px solid rgba(51,51,51,1);	
 }
 div.locked {
 	pointer-events: none !important;
