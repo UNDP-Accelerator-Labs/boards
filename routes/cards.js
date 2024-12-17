@@ -46,12 +46,12 @@ exports.updateMulti = (req, res) => {
 	.catch(err => console.log(err));
 }
 exports.remove = (req, res) => {
-	const { noteId, wallId } = req.query;
+	const { cardId, wallId } = req.query;
 	DB.conn.none(`
 		DELETE FROM cards
 		WHERE id = $1::INT
 		AND project = $2::INT
-	;`, [noteId, wallId])
+	;`, [cardId, wallId])
 	.then(_ => res.status(200).json({ response: 'Successfully deleted.' }))
 	.catch(err => console.log(err));
 }

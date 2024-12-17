@@ -35,14 +35,12 @@ exports.increase = (req, res) => {
 		;`, [ id, wallId ])
 		.then(async result => {
 			const { platform, query: savedQuery } = result;
-			console.log(result)
 			const query = new URLSearchParams(savedQuery);
 
 			const currpage = +query.get('page');
 			query.set('page', currpage + 1);
 
 			const { origin, stats, documents } = endpoint(platform, query.toString());
-			console.log(origin, stats, documents)
 			const promises = [];
 			if (stats) promises.push(fetch(stats).then(response => response.json()).catch(err => console.log(err)));
 			else promises.push(null);
@@ -52,7 +50,9 @@ exports.increase = (req, res) => {
 				.then(data => {
 					data.forEach(d => {
 						if (platform === 'blogapi') {
+							d.doc_id = d.id;
 							d.source = d.url;
+							delete d.id;
 						} else {
 							d.source = `${origin}/en/view/pad?id=${d.pad_id}`;
 						}

@@ -29,7 +29,9 @@ export const loadData = async function (_params) {
 		.then(data => {
 			data?.forEach(d => {
 				if (platform === 'blogapi') {
+					d.doc_id = d.id;
 					d.source = d.url;
+					delete d.id;
 				} else {
 					d.source = `${origin}/en/view/pad?id=${d.pad_id}`;
 				}

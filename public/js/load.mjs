@@ -151,7 +151,10 @@ async function onLoad () {
 				if (focus.classed('note')) {
 					const { id } = focus.datum();
 					await Note.remove({ note: focus, id, bcast: true });
-				} else if (focus.classed('group')) {
+				} if (focus.classed('card')) {
+					const { id } = focus.datum();
+					await Card.remove({ card: focus, id, bcast: true });
+				}  else if (focus.classed('group')) {
 					const { id, persistent } = focus.datum();
 					if (persistent) await Group.remove({ group: focus, id, bcast: true }); 
 				} else if (focus.classed('matrix')) {
