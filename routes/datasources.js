@@ -40,21 +40,33 @@ exports.increase = (req, res) => {
 			const currpage = +query.get('page');
 			query.set('page', currpage + 1);
 
-			const { origin, stats, pads } = endpoint(platform, query.toString());
+			const { origin, stats, documents } = endpoint(platform, query.toString());
 			const promises = [];
-			promises.push(fetch(stats).then(response => response.json()).catch(err => console.log(err)));
+			if (stats) promises.push(fetch(stats).then(response => response.json()).catch(err => console.log(err)));
+			else promises.push(null);
 			promises.push(
-				fetch(pads)
+				fetch(documents)
 				.then(response => response.json())
 				.then(data => {
-					// const [ data ] = json;
-					data.forEach(d => d.source = `${origin}/en/view/pad?id=${d.pad_id}`);
+					data.forEach(d => {
+						if (platform === 'blogapi') {
+							d.doc_id = d.id;
+							d.source = d.url;
+							delete d.id;
+						} else {
+							d.source = `${origin}/en/view/pad?id=${d.pad_id}`;
+						}
+					});
 					return data;
 				}).catch(err => console.log(err))
 			);
 
 			const data = await Promise.all(promises)
 			.catch(err => console.log(err));
+			// DETERMINE TOTAL COUNT
+			let total = 0;
+			if (platform === 'blogapi') total = data[1][0].totalRecords;
+			else total = data[0].total;
 
 			return t.one(`
 				UPDATE datasources
@@ -64,7 +76,7 @@ exports.increase = (req, res) => {
 				WHERE id = $4::INT
 					AND project = $5::INT
 				RETURNING *
-			;`, [ query.toString(), data[1].length, data[0].total, id, wallId ])
+			;`, [ query.toString(), data[1].length, total, id, wallId ])
 			.then(sourceinfo => {
 				sourceinfo.query = rmToken(sourceinfo.query);
 				res.status(200).json({ data, sourceinfo });
@@ -81,12 +93,23 @@ function rmToken (_query) {
 
 function endpoint (platform, query) {
 	const origin = new URL(`https://${platform}.sdg-innovation-commons.org`);
-	const stats = new URL('apis/fetch/statistics', origin);
-	const pads = new URL('apis/fetch/pads', origin);
+	if (platform === 'blogapi') {
+		// THE API STRUCTURE IS SLIGHTLY DIFFERENT FOR BLOGS
+		const documents = new URL('articles', origin);
+		return { 
+			origin,
+			// stats: `${stats.origin}${stats.pathname}?${query}`,
+			documents: `${documents.origin}${documents.pathname}?${query}`,
+		}
 
-	return { 
-		origin,
-		stats: `${stats.origin}${stats.pathname}?${query}`,
-		pads: `${pads.origin}${pads.pathname}?${query}`,
+	} else {
+		const stats = new URL('apis/fetch/statistics', origin);
+		const documents = new URL('apis/fetch/pads', origin);
+
+		return { 
+			origin,
+			stats: `${stats.origin}${stats.pathname}?${query}`,
+			documents: `${documents.origin}${documents.pathname}?${query}`,
+		}
 	}
 }

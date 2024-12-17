@@ -112,7 +112,7 @@ async function dragEnd (d) {
 
 	if (computeDistance([0, 0], [d.dx, d.dy]) <= 10) {
 		// Note.releaseAll(true);
-		Card.releaseAll(true);
+		// Card.releaseAll(true);
 		// if (!(sel.classed('group') && d.persistent)) Group.releaseAll(true);
 		// Matrix.releaseAll(true);
 		return console.log('has not moved');

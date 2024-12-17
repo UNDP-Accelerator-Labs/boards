@@ -290,23 +290,25 @@ div.card {
 	background-color: #FFF;
 	display: inline-block;
 	position: absolute;
-	width: 150px;
+	width: 200px;
 	min-height: 100px;
-	padding: 2rem;
-	border: 1px solid rgba(51,51,51,.05);
+	border: 1px solid rgba(51,51,51,.25);
 	z-index: 100;
 	transform-origin: top center;
 	margin: 0 2rem 1rem 0;
 }
 div.card img {
-	width: 150px;
+	width: 200px;
 }
 div.card h1 {
 	font-size: 1rem;
 	margin-bottom: .25rem;
+	padding: 1rem;
 }
 div.card p {
 	font-size: .75rem;
+	padding: 0 1rem 1rem 1rem;
+	word-break: break-word;
 }
 /*div.deck div.card {
 	position: relative;
@@ -327,11 +329,11 @@ div.matrix.focus {
 	border: 1px solid rgba(51,51,51,1);
 }
 div.group.focus {
-	border: 1px solid rgba(51,51,51,.25);
+	border: 1px solid rgba(51,51,51,1);
 }
 div.note.focus,
 div.card.focus {
-	border: 3px solid rgba(51,51,51,.1);	
+	border: 1px solid rgba(51,51,51,1);	
 }
 div.locked {
 	pointer-events: none !important;

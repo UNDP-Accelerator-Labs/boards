@@ -5,7 +5,9 @@ const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiNDVlMThiYzMtODgw
 const local = false;
 
 export const loadData = async function (_params) {
-	const { platform, ...p } = _params;
+	let { platform, ...p } = _params;
+	if (platform === 'publications') platform = 'blogapi';
+
 	const { pinboard } = p;
 	p.output = 'json';
 	p.include_tags = true;
@@ -17,29 +19,41 @@ export const loadData = async function (_params) {
 		query.append(k, p[k]);
 	}
 
-	const { origin, stats, pads } = endpoint(platform, query.toString());
+	const { origin, stats, documents } = endpoint(platform, query.toString());
 	const promises = [];
 
-	promises.push(GET(stats));
+	if (stats) promises.push(GET(stats));
+	else promises.push(null);
 	promises.push(
-		GET(pads)
+		GET(documents)
 		.then(data => {
-			// const [ data ] = res;
-			data?.forEach(d => d.source = `${origin}/en/view/pad?id=${d.pad_id}`);
+			data?.forEach(d => {
+				if (platform === 'blogapi') {
+					d.doc_id = d.id;
+					d.source = d.url;
+					delete d.id;
+				} else {
+					d.source = `${origin}/en/view/pad?id=${d.pad_id}`;
+				}
+			});
 			return data;
-		})
+		}).catch(err => console.log(err))
 	);
 
 	addLoader();
 	// FETCH THE DATA
 	const data = await Promise.all(promises)
 	.catch(err => console.log(err));
+	// DETERMINE THE TOTAL STATS
+	let total = 0
+	if (platform === 'blogapi') total = data[1][0].totalRecords;
+	else total = data[0].total;
 	// STORE THE API CALL
 	const sourceinfo = await POST('/addDatasource', { 
 		platform, 
 		query: query.toString(), 
 		loaded: data[1].length, 
-		total: data[0].total, 
+		total, 
 		wallId,
 	});
 	rmLoader();
