@@ -6,7 +6,7 @@ export const addDatasource = function (sourceinfo) {
 	const container = d3.select('div.sidebar div.inner div.content')
 	.addElems('div', 'datasource loaded', sourceinfo, d => d.id);
 
-	container.addElems('h2')
+	container.addElem('h2')
 	.html(d => `Loaded collection <small>${d.loaded < d.total ? `(${d.loaded}/ ${d.total})` : '(completed)'}</small>`);
 	container.addElems('div', 'row', d => {
 		return [
