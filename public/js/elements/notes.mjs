@@ -82,8 +82,26 @@ export const Note = {
 			d3.event.stopPropagation();
 		}).on('mouseup', _ => {
 			d3.event.stopPropagation();
-		}).on('keydown', _ => d3.event.stopPropagation())
-		.on('focus', function (d) {
+		}).on('keydown', _ => {
+			d3.event.stopPropagation();
+		}).on('keyup', async function (d) {
+			d3.event.stopPropagation();
+			// SAVE AND BROADCAST
+			const disconnect_from_pipe = this.value.trim() !== d.content;
+			d.content = this.value || d.content;
+
+			const datum = {};
+			datum.content = d.content;
+			if (d.pipe_from && disconnect_from_pipe) datum.pipe_from = null;
+
+			await constructorRef.update({ 
+				note, 
+				// datum: { content: d.content, pipe_from: disconnect_from_pipe ? null : d.pipe_from },
+				datum,
+				bcast: true,
+				pipe_note: true,
+			});
+		}).on('focus', function (d) {
 			const { id } = d;
 			// REMOVE FOCUS FROM ALL OBJECTS
 			if (!d3.select(this).classed('focus')) {
