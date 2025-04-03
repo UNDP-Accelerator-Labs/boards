@@ -1,25 +1,26 @@
 import { Note, Group, Card, Matrix } from "../elements/index.mjs";
 import { wallId } from "../helpers/index.mjs";
-const host = new URL(window.location).host;
 let ws;
 
-export const connectToSocket = function () {
-  if (ws) {
-    ws.onerror = ws.onopen = ws.onclose = null;
-    ws.close();
-  }
+export const connectToSocket = async function () {
+  let res = await fetch(`/negotiate?wallId=${wallId}`);
+  let data = await res.json();
 
-  if (host.includes("localhost")) ws = new WebSocket(`ws://${host}?project=${wallId}`);
-  else ws = new WebSocket(`wss://${host}?project=${wallId}`);
-  ws.onerror = function () {
-    console.log("WebSocket error");
+  let url = new URL(data.url);
+  ws = new WebSocket(url, "json.webpubsub.azure.v1");
+
+  ws.onerror = function (e) {
+    console.log("WebSocket error ", e);
   };
   ws.onopen = function (evt) {
     console.log("WebSocket connection established");
   };
   ws.onmessage = async function (evt) {
     const res = JSON.parse(evt.data);
-    const { project, object, operation, client, data } = res;
+    const { project, object, operation, client, data, type } = res?.data || {};
+
+    if (type === "system") return console.log("system message");
+
     if (project !== wallId)
       return console.log(
         "something went wrong. recieving information from a different room"
@@ -101,12 +102,6 @@ export const connectToSocket = function () {
   };
 };
 
-// wsSendButton.onclick = function () {
-
-// 	ws.send('Hello World!');
-// 	showMessage('Sent "Hello World!"');
-// };
-
 export const broadcast = {
   connected: function () {
     if (!ws) {
@@ -117,7 +112,18 @@ export const broadcast = {
   object: function (_kwargs) {
     const { object, operation, data } = _kwargs;
     if (this.connected()) {
-      ws.send(JSON.stringify({ project: wallId, object, operation, data }));
+      ws.send(
+        JSON.stringify({
+          data: {
+            project: wallId,
+            object,
+            operation,
+            data,
+          },
+          group: wallId,
+          type: "sendToGroup",
+        })
+      );
       console.log("message sent");
     }
   },
