@@ -31,7 +31,7 @@ export const connectToSocket = async function () {
       return console.log(
         "something went wrong. recieving information from a different room"
       );
-    console.log("operation... ", operation, object, client);
+
     if (object === "note") {
       if (operation === "add") {
         await Note.add({ datum: data, client });
