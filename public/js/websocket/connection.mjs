@@ -5,9 +5,9 @@ let ws;
 export const connectToSocket = async function () {
   let res = await fetch(`/negotiate?wallId=${wallId}`);
   let data = await res.json();
+  const { url, uuid } = data;
 
-  let url = new URL(data.url);
-  ws = new WebSocket(url, "json.webpubsub.azure.v1");
+  ws = new WebSocket(new URL(url), "json.webpubsub.azure.v1");
 
   ws.onerror = function (e) {
     console.log("WebSocket error ", e);
@@ -23,7 +23,8 @@ export const connectToSocket = async function () {
   };
   ws.onmessage = async function (evt) {
     const res = JSON.parse(evt.data);
-    const { project, object, operation, client, data, type } = res?.data || {};
+    const { project, object, operation, data, type } = res?.data || {};
+    let client = res?.fromUserId === uuid ? null : res?.fromUserId;
 
     if (type === "system") return console.log("system message");
 

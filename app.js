@@ -144,6 +144,7 @@ app.get("/negotiate", async (req, res) => {
 
   res.json({
     url: token.url,
+    uuid,
   });
 });
 

@@ -363,7 +363,7 @@ export const Note = {
   lock: function (_kwargs) {
     const constructorRef = this;
     let { note, id, bcast, client } = _kwargs;
-    console.log("lock note", _kwargs);
+
     if (!note?.node() && !id) {
       return console.log("cannot find note to remove");
     } else if (!note?.node() && id) {
