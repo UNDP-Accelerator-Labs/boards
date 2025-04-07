@@ -11,6 +11,7 @@ const path = require("path");
 const bodyparser = require("body-parser");
 const DB = require("./config.js");
 const { WebPubSubServiceClient } = require("@azure/web-pubsub");
+const { WebPubSubEventHandler } = require("@azure/web-pubsub-express");
 
 const app = express();
 
@@ -36,6 +37,36 @@ const sessionMiddleware = session({
 });
 
 app.use(sessionMiddleware);
+
+const { WebPubSubConnectionString, WEBPUBSUB_HUB_NAME } = process.env;
+
+const serviceClient = new WebPubSubServiceClient(
+  WebPubSubConnectionString,
+  WEBPUBSUB_HUB_NAME
+);
+
+let handler = new WebPubSubEventHandler(WEBPUBSUB_HUB_NAME, {
+  path: "/eventhandler",
+  handleConnect: async (req, res) => {
+    console.log("connected");
+    res.success();
+  },
+  onConnected: async (req, res) => {
+    console.log("connected... ");
+  },
+  onDisconnected: async (req, res) => {
+    console.log("disconnected...");
+  },
+  handleUserEvent: async (req, res) => {
+    let message = req.data;
+
+    console.log("message", message);
+    res.success();
+  },
+});
+
+app.use(handler.getMiddleware());
+
 app.use(express.static(path.join(__dirname, "./public")));
 app.use("/scripts", express.static(path.join(__dirname, "./node_modules")));
 app.use(bodyparser.json());
@@ -90,13 +121,6 @@ const { login, logout } = require("./routes/login.js");
 app.post("/login", login);
 app.delete("/logout", logout);
 ///////////////////////
-
-const { WebPubSubConnectionString, WEBPUBSUB_HUB_NAME } = process.env;
-
-const serviceClient = new WebPubSubServiceClient(
-  WebPubSubConnectionString,
-  WEBPUBSUB_HUB_NAME
-);
 
 app.get("/negotiate", async (req, res) => {
   const wallId = req.query.wallId;
