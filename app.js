@@ -60,7 +60,7 @@ let handler = new WebPubSubEventHandler(WEBPUBSUB_HUB_NAME, {
   handleUserEvent: async (req, res) => {
     let message = req.data;
 
-    console.log("message", message);
+    console.log("message", req.context.states, message);
     res.success();
   },
 });

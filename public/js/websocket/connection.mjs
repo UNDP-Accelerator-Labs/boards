@@ -13,6 +13,12 @@ export const connectToSocket = async function () {
     console.log("WebSocket error ", e);
   };
   ws.onopen = function (evt) {
+    ws.send(
+      JSON.stringify({
+        type: "joinGroup",
+        group: wallId,
+      })
+    );
     console.log("WebSocket connection established");
   };
   ws.onmessage = async function (evt) {
